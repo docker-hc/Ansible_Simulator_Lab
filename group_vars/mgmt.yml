@@ -11,3 +11,10 @@ podman_containers:
   - config-db-1
   - config-elasticsearch-1
   - config-redis-1
+
+# Cockpit proxy URLs — access all lab hosts through mgmt node
+# No cockpit-dashboard package needed on RHEL 10 Cockpit 334+
+cockpit_proxy_urls:
+  controller: "https://192.168.2.91:9090/=192.168.56.12"
+  node1: "https://192.168.2.91:9090/=192.168.56.21"
+  node2: "https://192.168.2.91:9090/=192.168.56.22"
