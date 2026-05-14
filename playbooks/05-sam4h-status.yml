@@ -13,13 +13,10 @@
         msg: "{{ container_status.stdout_lines }}"
 
     - name: Verify SAM4H web UI responds
-      uri:
-        url: "https://192.168.2.91:8080"
-        validate_certs: false
-        status_code: [200, 302]
-      register: sam4h_ui
-      delegate_to: localhost
+      command: curl -sk -o /dev/null -w "%{http_code}" https://192.168.2.91:8080
+      register: sam4h_check
+      changed_when: false
 
     - name: Show UI status
       debug:
-        msg: "SAM4H UI HTTP status: {{ sam4h_ui.status }}"
+        msg: "SAM4H UI HTTP status: {{ sam4h_check.stdout }}"
