@@ -1,0 +1,20 @@
+---
+# Ansible Collection Requirements
+# Install all with: ansible-galaxy collection install -r requirements.yml
+#
+# For offline installation from local tar files:
+#   ansible-galaxy collection install /path/to/collection.tar.gz
+collections:
+  - name: ansible.posix
+
+  # Brocade Fibre Channel switch automation via FOS REST API
+  # Requires FOS v8.2.1 or higher on the switch
+  - name: brocade.fos
+    version: "2.0.0"
+
+  # Hitachi Vantara VSP One Block storage automation
+  # Direct REST API management of VSP One Block 26 arrays
+  # Modules: hv_ldev, hv_hostgroup, hv_snapshot, hv_truecopy,
+  #          hv_vsp_one_server, hv_user, hv_storage_pool_facts
+  - name: hitachivantara.vspone_block
+    version: "4.8.1"
