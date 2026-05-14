@@ -1,0 +1,5 @@
+---
+- name: Prepare nodes for SAM4H host registration
+  hosts: nodes
+  roles:
+    - storage-sim

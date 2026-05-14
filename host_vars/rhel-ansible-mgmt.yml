@@ -1,0 +1,8 @@
+---
+# Ansible connects via internal network
+ansible_host: 192.168.56.10
+
+# Bridged IP — SAM4H web UI and Cockpit accessible here
+bridged_ip: 192.168.2.91
+cockpit_url: "https://192.168.2.91:9090"
+sam4h_ui_url: "https://192.168.2.91:8080"

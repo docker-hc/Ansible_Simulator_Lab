@@ -1,0 +1,11 @@
+---
+cockpit_packages_rhel7:
+  - cockpit
+  - cockpit-system
+  - cockpit-networkmanager
+
+cockpit_packages_rhel10:
+  - cockpit
+  - cockpit-dashboard
+
+cockpit_disallowed_users_file: /etc/cockpit/disallowed-users

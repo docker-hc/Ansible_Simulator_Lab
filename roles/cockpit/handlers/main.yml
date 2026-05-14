@@ -1,0 +1,5 @@
+---
+- name: restart cockpit socket
+  systemd:
+    name: cockpit.socket
+    state: restarted

@@ -1,0 +1,8 @@
+---
+# Internal network only — no bridged adapter
+ansible_host: 192.168.56.21
+
+# Simulated WWNs for SAM4H host registration
+sam4h_host_name: rhel-dkc-node1
+wwn_a: "50:00:09:72:08:10:00:01"
+wwn_b: "50:00:09:72:08:11:00:01"

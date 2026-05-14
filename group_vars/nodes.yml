@@ -1,0 +1,11 @@
+---
+# iSCSI initiator settings
+iscsi_enabled: true
+iscsi_service: iscsid
+sim_wwn_file: /etc/sam4h-sim-wwn.conf
+
+# SAM4H fabric registration
+sam4h_host_site: "lab-site-01"
+sam4h_fabrics:
+  - name: fabric-A
+  - name: fabric-B

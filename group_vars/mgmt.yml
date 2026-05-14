@@ -1,0 +1,13 @@
+---
+# SAM4H service
+sam4h_install_path: /opt/hitachi/sam4h
+sam4h_service: sam4h.service
+sam4h_port: 8080
+sam4h_compose_file: /opt/hitachi/sam4h/config/docker-compose.yml
+
+# Expected running containers
+podman_containers:
+  - config-sam4h-1
+  - config-db-1
+  - config-elasticsearch-1
+  - config-redis-1

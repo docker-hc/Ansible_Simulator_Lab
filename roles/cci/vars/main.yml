@@ -1,0 +1,5 @@
+---
+horcm_conf_file: "/etc/horcm{{ horcm_instance }}.conf"
+horcm_start_script: "{{ horcm_bin }}/horcmstart.sh"
+horcm_shutdown_script: "{{ horcm_bin }}/horcmshutdown.sh"
+raidcom_bin: "{{ horcm_bin }}/raidcom"

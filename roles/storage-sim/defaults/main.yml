@@ -1,0 +1,3 @@
+---
+iscsi_enabled: true
+sim_wwn_file: /etc/sam4h-sim-wwn.conf

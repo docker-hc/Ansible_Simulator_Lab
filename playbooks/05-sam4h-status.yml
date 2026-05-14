@@ -1,0 +1,25 @@
+---
+- name: Check SAM4H container health on mgmt node
+  hosts: mgmt
+  gather_facts: false
+  tasks:
+    - name: Check all SAM4H containers are running
+      command: podman ps --format "{{ '{{' }}.Names{{ '}}' }} {{ '{{' }}.Status{{ '}}' }}"
+      register: container_status
+      changed_when: false
+
+    - name: Show container status
+      debug:
+        msg: "{{ container_status.stdout_lines }}"
+
+    - name: Verify SAM4H web UI responds
+      uri:
+        url: "https://192.168.2.91:8080"
+        validate_certs: false
+        status_code: [200, 302]
+      register: sam4h_ui
+      delegate_to: localhost
+
+    - name: Show UI status
+      debug:
+        msg: "SAM4H UI HTTP status: {{ sam4h_ui.status }}"

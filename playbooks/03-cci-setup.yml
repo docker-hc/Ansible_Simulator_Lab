@@ -1,0 +1,5 @@
+---
+- name: Configure CCI and IP command device on controller
+  hosts: controller
+  roles:
+    - cci

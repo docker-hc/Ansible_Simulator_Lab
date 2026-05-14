@@ -1,0 +1,22 @@
+---
+- name: Verify storage path state on nodes
+  hosts: nodes
+  gather_facts: false
+  tasks:
+    - name: Check iSCSI sessions
+      command: iscsiadm -m session
+      register: sessions
+      changed_when: false
+      failed_when: false
+
+    - name: List block devices
+      command: lsblk -o NAME,SIZE,TYPE,MOUNTPOINT
+      register: blk
+      changed_when: false
+
+    - name: Report storage state
+      debug:
+        msg:
+          - "iSCSI sessions: {{ sessions.stdout | default('none') }}"
+          - "Block devices:"
+          - "{{ blk.stdout_lines }}"

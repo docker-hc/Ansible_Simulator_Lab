@@ -1,0 +1,14 @@
+---
+# Global variables applied to all hosts
+
+ansible_user: root
+ansible_ssh_private_key_file: /root/.ssh/ansible
+ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+# Lab site name used in SAM4H
+lab_site: "lab-site-01"
+
+# SAM4H web UI — bridged IP of ansible-mgmt node
+sam4h_url: "https://192.168.2.91:8080"
+sam4h_user: "root"
+sam4h_pass: "{{ vault_sam4h_password }}"

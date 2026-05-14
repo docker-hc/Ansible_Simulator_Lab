@@ -1,0 +1,43 @@
+---
+# Test SAM4H API authentication using root credentials
+# Run: ansible-playbook playbooks/06-sam4h-api-test.yml --ask-vault-pass
+- name: Test SAM4H API connectivity
+  hosts: localhost
+  gather_facts: false
+  vars:
+    sam4h_url: "https://192.168.2.91:8080"
+    sam4h_user: "root"
+    sam4h_pass: "{{ vault_sam4h_password }}"
+  tasks:
+    - name: Authenticate to SAM4H API
+      uri:
+        url: "{{ sam4h_url }}/api/v1/auth/login"
+        method: POST
+        validate_certs: false
+        body_format: json
+        body:
+          username: "{{ sam4h_user }}"
+          password: "{{ sam4h_pass }}"
+        status_code: [200, 201]
+      register: auth_response
+
+    - name: Show authentication result
+      debug:
+        msg: "SAM4H API authentication successful — token received"
+      when: auth_response.status in [200, 201]
+
+    - name: Get SAM4H system info
+      uri:
+        url: "{{ sam4h_url }}/api/v1/system"
+        method: GET
+        validate_certs: false
+        headers:
+          Authorization: "Bearer {{ auth_response.json.token }}"
+        status_code: [200]
+      register: system_info
+      when: auth_response.status in [200, 201]
+
+    - name: Show system info
+      debug:
+        var: system_info.json
+      when: system_info is defined

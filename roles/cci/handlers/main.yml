@@ -1,0 +1,9 @@
+---
+- name: restart horcm
+  command: "{{ horcm_bin }}/horcmshutdown.sh {{ horcm_instance }}"
+  listen: restart horcm
+  failed_when: false
+
+- name: start horcm after restart
+  command: "{{ horcm_bin }}/horcmstart.sh {{ horcm_instance }}"
+  listen: restart horcm

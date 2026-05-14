@@ -1,0 +1,6 @@
+---
+horcm_instance: 0
+horcm_port: 31000
+command_device_type: ip
+horcm_bin: /HORCM/usr/bin
+horcm_conf_dir: /etc

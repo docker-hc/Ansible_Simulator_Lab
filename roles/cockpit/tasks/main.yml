@@ -1,0 +1,33 @@
+---
+- name: Install Cockpit packages (RHEL 7)
+  yum:
+    name: "{{ cockpit_packages_rhel7 }}"
+    state: present
+  when: ansible_distribution_major_version == "7"
+
+- name: Install Cockpit packages (RHEL 10)
+  dnf:
+    name: "{{ cockpit_packages_rhel10 }}"
+    state: present
+  when: ansible_distribution_major_version == "10"
+
+- name: Enable and start cockpit socket
+  systemd:
+    name: cockpit.socket
+    state: started
+    enabled: true
+
+- name: Allow cockpit through firewall
+  firewalld:
+    service: cockpit
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: Remove root from cockpit disallowed users (RHEL 10)
+  lineinfile:
+    path: "{{ cockpit_disallowed_users_file }}"
+    regexp: '^root'
+    state: absent
+  when: ansible_distribution_major_version == "10"
+  notify: restart cockpit socket

@@ -1,0 +1,24 @@
+---
+- name: Verify lab baseline on all hosts
+  hosts: lab
+  gather_facts: true
+  tasks:
+    - name: Check hostname
+      command: hostname -f
+      register: fqdn
+      changed_when: false
+
+    - name: Confirm cockpit socket active
+      systemd:
+        name: cockpit.socket
+        state: started
+      check_mode: true
+
+    - name: Print network interfaces
+      command: ip -br addr show
+      register: ifaces
+      changed_when: false
+
+    - name: Show interfaces
+      debug:
+        msg: "{{ ifaces.stdout_lines }}"
