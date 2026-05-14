@@ -1,46 +1,46 @@
 ---
 - name: Verify CCI is installed
-  stat:
-    path: "{{ raidcom_bin }}"
-  register: raidcom_stat
-  failed_when: not raidcom_stat.stat.exists
+  ansible.builtin.stat:
+    path: "{{ cci_raidcom_bin }}"
+  register: cci_raidcom_stat
+  failed_when: not cci_raidcom_stat.stat.exists
 
 - name: Generate HORCM config file
-  template:
+  ansible.builtin.template:
     src: horcm.conf.j2
-    dest: "{{ horcm_conf_file }}"
+    dest: "{{ cci_horcm_conf_file }}"
     mode: '0644'
-    backup: yes
-  notify: restart horcm
+    backup: true
+  notify: Restart horcm
 
 - name: Check if HORCM instance is already running
-  command: "{{ horcm_bin }}/raidcom get system -IH{{ horcm_instance }}"
-  register: horcm_running
+  ansible.builtin.command: "{{ cci_raidcom_bin }} get system -IH{{ cci_horcm_instance }}"
+  register: cci_horcm_running
   changed_when: false
   failed_when: false
 
-- name: Start HORCM instance {{ horcm_instance }}
-  command: "{{ horcm_start_script }} {{ horcm_instance }}"
-  when: horcm_running.rc != 0
-  register: horcm_start
+- name: Start HORCM instance {{ cci_horcm_instance }}
+  ansible.builtin.command: "{{ cci_horcm_start_script }} {{ cci_horcm_instance }}"
+  when: cci_horcm_running.rc != 0
+  register: cci_horcm_start
   failed_when:
-    - horcm_start.rc != 0
-    - "'already running' not in horcm_start.stdout"
+    - cci_horcm_start.rc != 0
+    - "'already running' not in cci_horcm_start.stdout"
 
 - name: Verify raidcom can reach array via IP command device
-  command: "{{ raidcom_bin }} get system -IH{{ horcm_instance }}"
-  register: array_info
+  ansible.builtin.command: "{{ cci_raidcom_bin }} get system -IH{{ cci_horcm_instance }}"
+  register: cci_array_info
   changed_when: false
   retries: 3
   delay: 5
 
 - name: Show array system info
-  debug:
-    msg: "{{ array_info.stdout_lines }}"
+  ansible.builtin.debug:
+    msg: "{{ cci_array_info.stdout_lines }}"
 
 - name: Open HORCM UDP port in firewall
-  firewalld:
-    port: "{{ horcm_port }}/udp"
+  ansible.posix.firewalld:
+    port: "{{ cci_horcm_port }}/udp"
     permanent: true
     state: enabled
     immediate: true

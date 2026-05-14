@@ -1,9 +1,9 @@
 ---
-- name: restart horcm
-  command: "{{ horcm_bin }}/horcmshutdown.sh {{ horcm_instance }}"
-  listen: restart horcm
+- name: Restart horcm
+  ansible.builtin.command: "{{ cci_horcm_shutdown_script }} {{ cci_horcm_instance }}"
+  listen: Restart horcm
   failed_when: false
 
-- name: start horcm after restart
-  command: "{{ horcm_bin }}/horcmstart.sh {{ horcm_instance }}"
-  listen: restart horcm
+- name: Start horcm after restart
+  ansible.builtin.command: "{{ cci_horcm_start_script }} {{ cci_horcm_instance }}"
+  listen: Restart horcm

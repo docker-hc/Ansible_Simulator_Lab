@@ -8,15 +8,7 @@ rhel-dkc-node2 ansible_host=192.168.56.22 ansible_user=root
 [mgmt]
 rhel-ansible-mgmt ansible_host=192.168.2.92 ansible_user=root
 
-[synology]
-synology-nas ansible_host=192.168.2.102 ansible_user=root ansible_port=2299 ansible_ssh_private_key_file=/root/.ssh/ansible ansible_ssh_transfer_method=piped
-ansible_python_interpreter=/usr/bin/python3.8
-
 [lab:children]
 controller
 nodes
 mgmt
-
-[all_hosts:children]
-lab
-synology

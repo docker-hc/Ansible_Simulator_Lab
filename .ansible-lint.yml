@@ -1,0 +1,10 @@
+---
+profile: moderate
+exclude_paths:
+  - .git/
+  - group_vars/vault.yml
+warn_list:
+  - yaml[line-length]
+  - name[casing]
+skip_list:
+  - yaml[truthy]
