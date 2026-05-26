@@ -1,9 +1,6 @@
 ---
-# CCI / Raidcom installation paths
 horcm_install_path: /HORCM
 horcm_bin: /HORCM/usr/bin
-
-# HORCM instance configuration
 horcm_instances:
   - instance: 0
     port: 31000
@@ -21,27 +18,15 @@ horcm_instances:
     port: 31003
     poll_interval: 1000
     timeout: 3000
-
-# IP Command Device
-# SAM4H (192.168.2.91) reaches HORCM via the controller bridged IP
 ip_command_device:
   type: ip
-  local_ip: 192.168.2.92        # bridged IP — must be reachable by SAM4H
-
-# Offline local RPM repository
+  local_ip: 192.168.2.92
+  array_ip: "192.168.2.91"
 local_repo_path: /opt/localrepo
 local_repo_url: http://192.168.56.12/localrepo
-
-# Raidcom credentials (stored in vault)
 raidcom_user: "{{ vault_raidcom_user }}"
 raidcom_password: "{{ vault_raidcom_password }}"
-
-# HORCM config file template base
 horcm_conf_base: /etc/horcm
-
-# VSP One Block — direct REST API connection info
-# Used by hitachivantara.vspone_block collection
-# Arrays and their IPs come from vault_arrays in vault.yml
 vsp_connection:
   connection_type: "direct"
   username: "{{ vault_raidcom_user }}"

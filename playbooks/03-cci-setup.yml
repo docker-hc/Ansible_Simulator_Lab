@@ -1,5 +1,13 @@
 ---
 - name: Configure CCI and IP command device on controller
   hosts: controller
-  roles:
-    - cci
+  tasks:
+    - name: Configure HORCM instance {{ item.instance }}
+      ansible.builtin.include_role:
+        name: cci
+      vars:
+        cci_horcm_instance: "{{ item.instance }}"
+        cci_horcm_port: "{{ item.port }}"
+      loop: "{{ horcm_instances }}"
+      loop_control:
+        label: "instance {{ item.instance }} port {{ item.port }}"

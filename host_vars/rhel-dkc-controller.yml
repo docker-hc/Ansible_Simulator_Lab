@@ -1,18 +1,10 @@
 ---
-# Ansible connects via internal network
 ansible_host: 192.168.56.12
-
-# Bridged IP — used by SAM4H to reach HORCM, and for Cockpit browser access
 bridged_ip: 192.168.2.92
 cockpit_url: "https://192.168.2.92:9090"
-
-# HORCM instance for this host
 horcm_instance: 0
-
-# IP Command Device listener
-# HORCM binds to the bridged IP so SAM4H can reach it over the LAN
 ip_command_device:
   local_ip: 192.168.2.92
-  array_ip: "{{ vault_array_ip }}"
+  array_ip: "192.168.2.91"
   instance: 0
   port: 31000
