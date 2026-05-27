@@ -1,0 +1,5 @@
+---
+ansible_host: 192.168.56.12
+bridged_ip: 192.168.2.92
+array_serial: "845665"
+horcm_instance: 1003
