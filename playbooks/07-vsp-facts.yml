@@ -1,46 +1,41 @@
 ---
-# Gather facts from all four VSP One Block 26 arrays
-# Requires: array SVP IPs in vault_arrays, SAM4H user created on each array
-# Run: ansible-playbook playbooks/07-vsp-facts.yml
 - name: Gather VSP One Block storage facts
   hosts: localhost
   gather_facts: false
+  vars_files:
+    - ../group_vars/vault.yml
   tasks:
-    - name: Get pool facts for each array
+    - name: Get parity group facts for each array
       hitachivantara.vspone_block.vsp.hv_paritygroup_facts:
         connection_info:
           connection_type: "direct"
-          address: "{{ item.mgmt_ip }}"
+          address: "{{ item.controller_ip_0 }}"
           username: "{{ vault_raidcom_user }}"
           password: "{{ vault_raidcom_password }}"
-      register: vsp_facts
+      register: vsp_pg_facts
       loop: "{{ vault_arrays }}"
-      when: item.mgmt_ip != "0.0.0.0"
 
     - name: Get LDEV facts for each array
       hitachivantara.vspone_block.vsp.hv_ldev_facts:
         connection_info:
           connection_type: "direct"
-          address: "{{ item.mgmt_ip }}"
+          address: "{{ item.controller_ip_0 }}"
           username: "{{ vault_raidcom_user }}"
           password: "{{ vault_raidcom_password }}"
       register: vsp_ldev_facts
       loop: "{{ vault_arrays }}"
-      when: item.mgmt_ip != "0.0.0.0"
 
     - name: Get host group facts for each array
       hitachivantara.vspone_block.vsp.hv_hg_facts:
         connection_info:
           connection_type: "direct"
-          address: "{{ item.mgmt_ip }}"
+          address: "{{ item.controller_ip_0 }}"
           username: "{{ vault_raidcom_user }}"
           password: "{{ vault_raidcom_password }}"
       register: vsp_hg_facts
       loop: "{{ vault_arrays }}"
-      when: item.mgmt_ip != "0.0.0.0"
 
-    - name: Show results
+    - name: Show parity group results
       ansible.builtin.debug:
-        msg: "Array {{ item.item.serial }} ({{ item.item.model }}) — skipped, no IP configured"
-      loop: "{{ vsp_facts.results }}"
-      when: item.skipped | default(false)
+        msg: "Array {{ item.item.serial }} — Parity Groups: {{ item.parityGroups | default([]) | length }}"
+      loop: "{{ vsp_pg_facts.results }}"
