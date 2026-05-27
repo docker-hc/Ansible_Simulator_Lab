@@ -2,26 +2,30 @@
 horcm_install_path: /HORCM
 horcm_bin: /HORCM/usr/bin
 horcm_instances:
-  - instance: 0
-    port: 31000
+  - instance: 1001
+    port: 34001
+    array_ip: "192.168.2.90"
     poll_interval: 1000
     timeout: 3000
-  - instance: 1
-    port: 31001
+  - instance: 1002
+    port: 34002
+    array_ip: "192.168.2.93"
     poll_interval: 1000
     timeout: 3000
-  - instance: 2
-    port: 31002
+  - instance: 1003
+    port: 34003
+    array_ip: "192.168.2.92"
     poll_interval: 1000
     timeout: 3000
-  - instance: 3
-    port: 31003
+  - instance: 1004
+    port: 34004
+    array_ip: "192.168.2.94"
     poll_interval: 1000
     timeout: 3000
 ip_command_device:
   type: ip
-  local_ip: 192.168.2.92
-  array_ip: "192.168.2.91"
+  local_ip: 192.168.2.91
+  array_ip: "192.168.2.90"
 local_repo_path: /opt/localrepo
 local_repo_url: http://192.168.56.12/localrepo
 raidcom_user: "{{ vault_raidcom_user }}"
