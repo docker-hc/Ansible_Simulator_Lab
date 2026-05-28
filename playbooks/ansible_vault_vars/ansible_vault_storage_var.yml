@@ -1,0 +1,13 @@
+---
+# HitachiVantara VSP One B26 — Lab connection variables
+# Points to array 810294 by default — override storage_address per run
+
+storage_serial: "810294"
+storage_address: "192.168.2.90"
+vault_storage_username: "maintenance"
+vault_storage_secret: "raid-maintenance"
+
+secondary_storage_serial: "840006"
+secondary_storage_address: "192.168.2.93"
+vault_secondary_storage_username: "maintenance"
+vault_secondary_storage_secret: "raid-maintenance"

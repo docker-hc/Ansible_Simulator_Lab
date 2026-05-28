@@ -1,0 +1,6 @@
+profile: moderate
+exclude_paths:
+  - playbooks/vsp_direct/
+  - playbooks/ansible_vault_vars/
+warn_list:
+  - yaml[line-length]

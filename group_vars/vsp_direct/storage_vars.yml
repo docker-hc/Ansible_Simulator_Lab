@@ -1,0 +1,33 @@
+---
+# HitachiVantara VSP One B26 — connection variables
+# Used by vspone_block collection playbooks
+
+arrays:
+  - name: "VSP-ONE-B26-810294"
+    serial: "810294"
+    storage_address: "192.168.2.90"
+    storage_serial: "810294"
+    vault_storage_username: "{{ vault_raidcom_user }}"
+    vault_storage_secret: "{{ vault_raidcom_password }}"
+  - name: "VSP-ONE-B26-840006"
+    serial: "840006"
+    storage_address: "192.168.2.93"
+    storage_serial: "840006"
+    vault_storage_username: "{{ vault_raidcom_user }}"
+    vault_storage_secret: "{{ vault_raidcom_password }}"
+  - name: "VSP-ONE-B26-845665"
+    serial: "845665"
+    storage_address: "192.168.2.92"
+    storage_serial: "845665"
+    vault_storage_username: "{{ vault_raidcom_user }}"
+    vault_storage_secret: "{{ vault_raidcom_password }}"
+  - name: "VSP-ONE-B26-845666"
+    serial: "845666"
+    storage_address: "192.168.2.94"
+    storage_serial: "845666"
+    vault_storage_username: "{{ vault_raidcom_user }}"
+    vault_storage_secret: "{{ vault_raidcom_password }}"
+
+# Default to first array — override per playbook
+storage_address: "192.168.2.90"
+storage_serial: "810294"
