@@ -1,0 +1,128 @@
+---
+# Gather all facts from every VSP One B26 array and write raw JSON.
+# Run: ansible-playbook playbooks/08-export-facts.yml
+- name: Export VSP One Block facts to JSON
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../group_vars/vault.yml
+  vars:
+    export_dir: "{{ playbook_dir }}/../exports"
+    raw_dir: "{{ export_dir }}/raw"
+
+  tasks:
+    - name: Ensure export directories exist
+      ansible.builtin.file:
+        path: "{{ raw_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Gather storage system facts
+      hitachivantara.vspone_block.vsp.hv_storagesystem_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: sys_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather parity group facts
+      hitachivantara.vspone_block.vsp.hv_paritygroup_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: pg_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather storage port facts
+      hitachivantara.vspone_block.vsp.hv_storage_port_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: port_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather storage pool facts
+      hitachivantara.vspone_block.vsp.hv_storagepool_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: pool_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather LDEV facts
+      hitachivantara.vspone_block.vsp.hv_ldev_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: ldev_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather host group facts
+      hitachivantara.vspone_block.vsp.hv_hg_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: hg_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Write raw JSON for each module fact type
+      ansible.builtin.copy:
+        dest: "{{ raw_dir }}/{{ item.name }}.json"
+        mode: "0644"
+        content: "{{ item.data | to_nice_json }}"
+      loop:
+        - { name: "system", data: "{{ sys_facts.results }}" }
+        - { name: "parity_groups", data: "{{ pg_facts.results }}" }
+        - { name: "ports", data: "{{ port_facts.results }}" }
+        - { name: "pools", data: "{{ pool_facts.results }}" }
+        - { name: "ldevs", data: "{{ ldev_facts.results }}" }
+        - { name: "host_groups", data: "{{ hg_facts.results }}" }
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Build serial:instance map for HBA WWN gather
+      ansible.builtin.set_fact:
+        hba_map: >-
+          {{ (hba_map | default('')) +
+             (',' if (hba_map | default('')) else '') +
+             (item.serial | string) + ':' + (item.horcm_instance | string) }}
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather HBA WWN logins via raidcom
+      ansible.builtin.command:
+        argv:
+          - python3.11
+          - "{{ playbook_dir }}/../scripts/gather_hba_wwn.py"
+          - "--map"
+          - "{{ hba_map }}"
+          - "--user"
+          - "{{ vault_raidcom_user }}"
+          - "--password"
+          - "{{ vault_raidcom_password }}"
+          - "--out"
+          - "{{ raw_dir }}/hba_wwn.json"
+      changed_when: false
+
+    - name: Show next step
+      ansible.builtin.debug:
+        msg: "Raw facts written to {{ raw_dir }}. Now run scripts/facts_to_xlsx.py"
