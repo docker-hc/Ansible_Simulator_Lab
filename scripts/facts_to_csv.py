@@ -15,7 +15,7 @@ import json
 import os
 import sys
 
-FACT_TYPES = ["system", "parity_groups", "ports", "pools", "ldevs", "host_groups"]
+FACT_TYPES = ["system", "parity_groups", "ports", "pools", "ldevs", "host_groups", "host_mode_options", "journals", "licenses"]
 
 
 def load_raw(raw_dir):
@@ -28,8 +28,14 @@ def load_raw(raw_dir):
         with open(path) as fh:
             results = json.load(fh)
         for item in results:
-            serial = str(item.get("item", {}).get("serial", "unknown"))
+            serial = str(item.get("item", {}).get("serial") or item.get("serial", "unknown"))
             payload = extract_payload(item.get("ansible_facts", {}))
+            if ft == "host_mode_options" and isinstance(payload, dict):
+                payload = payload.get("host_mode_options", [])
+            if ft == "journals":
+                payload = payload or []
+            if payload is None:
+                payload = []
             arrays.setdefault(serial, {})[ft] = payload
     return arrays
 

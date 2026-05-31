@@ -3,3 +3,4 @@ exports/
 wg0.conf
 *.key
 duckdns/
+*.bak

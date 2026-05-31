@@ -12,17 +12,23 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
-FACT_TYPES = ["system", "parity_groups", "ports", "pools", "ldevs", "host_groups"]
+FACT_TYPES = ["system", "parity_groups", "ports", "pools", "ldevs", "host_groups", "host_mode_options", "journals", "licenses"]
 FACT_LABELS = {
     "system": "Storage System", "parity_groups": "Parity Groups",
     "ports": "Storage Ports", "pools": "Storage Pools",
     "ldevs": "LDEVs", "host_groups": "Host Groups",
+    "host_mode_options": "Host Mode Options",
+    "journals": "Journals",
+    "licenses": "Licenses",
 }
 KEY_FIELDS = {
     "system": ["serial_number"], "parity_groups": ["parity_group_id"],
     "ports": ["port_id"], "pools": ["pool_id", "id", "pool_name"],
     "ldevs": ["ldev_id", "id"],
     "host_groups": [("port_id", "host_group_number"), ("port_id", "host_group_name")],
+    "host_mode_options": ["host_mode_option_id"],
+    "journals": ["journalId"],
+    "licenses": ["PRO_ID"],
 }
 REG_WWN_FIELDS = ["wwns", "host_wwns", "hba_wwns", "wwn_list"]
 
@@ -53,13 +59,20 @@ def load_raw(raw_dir):
             continue
         with open(path) as fh:
             for item in json.load(fh):
-                serial = str(item.get("item", {}).get("serial", "unknown"))
-                arrays.setdefault(serial, {})[ft] = extract_payload(item.get("ansible_facts", {}))
+                serial = str(item.get("item", {}).get("serial") or item.get("serial", "unknown"))
+                payload = extract_payload(item.get("ansible_facts", {}))
+                if ft == "host_mode_options" and isinstance(payload, dict):
+                    payload = payload.get("host_mode_options", [])
+                if ft == "journals":
+                    payload = payload or []
+                if payload is None:
+                    payload = []
+                arrays.setdefault(serial, {})[ft] = payload
     hba_path = os.path.join(raw_dir, "hba_wwn.json")
     if os.path.exists(hba_path):
         with open(hba_path) as fh:
             for item in json.load(fh):
-                serial = str(item.get("item", {}).get("serial", "unknown"))
+                serial = str(item.get("item", {}).get("serial") or item.get("serial", "unknown"))
                 recs = item.get("ansible_facts", {}).get("hba_wwns", [])
                 arrays.setdefault(serial, {}).setdefault("_hba", []).extend(recs)
     return arrays

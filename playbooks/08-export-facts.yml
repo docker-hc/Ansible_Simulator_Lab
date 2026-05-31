@@ -83,6 +83,28 @@
       loop_control:
         label: "{{ item.serial }}"
 
+    - name: Gather supported host mode options
+      hitachivantara.vspone_block.vsp.hv_supported_host_mode_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: hmo_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
+    - name: Gather journal volume facts
+      hitachivantara.vspone_block.vsp.hv_journal_facts:
+        connection_info:
+          address: "{{ item.controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+      register: journal_facts
+      loop: "{{ vault_arrays }}"
+      loop_control:
+        label: "{{ item.serial }}"
+
     - name: Write raw JSON for each module fact type
       ansible.builtin.copy:
         dest: "{{ raw_dir }}/{{ item.name }}.json"
@@ -95,6 +117,8 @@
         - { name: "pools", data: "{{ pool_facts.results }}" }
         - { name: "ldevs", data: "{{ ldev_facts.results }}" }
         - { name: "host_groups", data: "{{ hg_facts.results }}" }
+        - { name: "host_mode_options", data: "{{ hmo_facts.results }}" }
+        - { name: "journals", data: "{{ journal_facts.results }}" }   
       loop_control:
         label: "{{ item.name }}"
 
@@ -123,6 +147,21 @@
           - "{{ raw_dir }}/hba_wwn.json"
       changed_when: false
 
+    - name: Gather licenses via raidcom
+      ansible.builtin.command:
+        argv:
+          - python3.11
+          - "{{ playbook_dir }}/../scripts/gather_licenses.py"
+          - "--map"
+          - "{{ hba_map }}"
+          - "--user"
+          - "{{ vault_raidcom_user }}"
+          - "--password"
+          - "{{ vault_raidcom_password }}"
+          - "--out"
+          - "{{ raw_dir }}/licenses.json"
+      changed_when: false
+        
     - name: Show next step
       ansible.builtin.debug:
         msg: "Raw facts written to {{ raw_dir }}. Now run scripts/facts_to_xlsx.py"
