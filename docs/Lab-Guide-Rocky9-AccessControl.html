@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Access Control &amp; Production Roles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a12; --bg2:#10101f; --panel:#12121f; --panel2:#1a1a2e;
+    --line:#2d2d45; --line2:#3d3d5c;
+    --rose:#e85d9c; --rose-dim:#b54479; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#2a2342;
+    --txt:#e4dded; --txt-dim:#a89cc0; --muted:#6e6490;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(232,93,156,.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--rose); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--rose)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:780px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--rose); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.green b{color:var(--green)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--rose)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--rose)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--rose-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--rose);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--rose); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--rose); white-space:nowrap;}
+  .code{background:#08080f; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#2d2d45; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(232,93,156,.08); border-color:var(--rose)}
+  .box.info .h{color:var(--rose)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--rose); font-size:12px}
+  .yes{color:var(--green); font-weight:700}
+  .no{color:var(--red); font-weight:700}
+  .ro{color:var(--amber); font-weight:700}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--rose); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--rose); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Install &middot; Troubleshoot &middot; Simulator</div>
+    <div>Production &middot; Multi-Model</div>
+    <div>Remote Access</div>
+    <div class="cur">&#9656; DOCUMENT 7</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>Access Control<br><span class="accent">&amp; Production Roles</span></h1>
+  <p class="lede">Moving from "one root does everything" to production role separation &mdash; who may edit automation, who may run it, and how every action stays attributable. Two enforcement layers: Git review for changing the code, OS groups and scoped sudo for running it on the box.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip cyan">Git review <b>layer</b></span>
+    <span class="chip green">OS sudo <b>layer</b></span>
+    <span class="chip">RBAC &middot; <b>least privilege</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">Why role separation</a></li>
+    <li><a href="#roles">The four roles</a></li>
+    <li><a href="#model">Two enforcement layers</a></li>
+    <li><a href="#git">Git layer: PR review</a></li>
+    <li><a href="#branch">Branch protection &amp; CODEOWNERS</a></li>
+    <li><a href="#os">OS layer: groups &amp; users</a></li>
+    <li><a href="#sudo">Scoped sudo rules</a></li>
+    <li><a href="#attribution">Attribution &amp; audit</a></li>
+    <li><a href="#flow">End-to-end deployment flow</a></li>
+    <li><a href="#checklist">Implementation checklist</a></li>
+  </ol>
+</nav>
+<section id="why">
+  <h2 class="sec"><span class="num">01</span> Why role separation</h2>
+  <p>In the lab, a single <code>root</code> account does everything: edits playbooks, runs them, holds the vault, reaches the arrays. That is fine for one person building a sandbox. In production it fails three ways at once &mdash; an accidental edit has nothing to stop it, an over-privileged colleague can change automation unreviewed, and a compromised account owns the whole estate. Role separation answers a single question for every action: <strong>is this person authorized to do this, and can we prove who did it?</strong></p>
+  <div class="box info">
+    <div class="h">The three pillars</div>
+    <strong>Authorization</strong> &mdash; each person can do only what their role permits. <strong>Attribution</strong> &mdash; every change and every run is tied to a named individual. <strong>Recovery</strong> &mdash; any unwanted change can be reverted from an off-box source of truth. Git, groups, and sudo together deliver all three; no single one is sufficient.
+  </div>
+  <p>The guiding rule throughout is <strong>least privilege</strong>: grant the minimum capability a role needs, nothing more. An operator who runs reports does not need to edit playbooks; an author who edits them does not need to deploy to production unreviewed.</p>
+</section>
+
+<section id="roles">
+  <h2 class="sec"><span class="num">02</span> The four roles</h2>
+  <p>Production storage-automation typically resolves into four roles. One person may hold several, but the <em>rights</em> stay separate so no single uncontrolled action can both change automation and run it against production.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Role</th><th>May edit code</th><th>May run on prod</th><th>May approve/merge</th><th>May read</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Operator</strong></td><td class="no">No</td><td class="yes">Yes (scoped)</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td><strong>Author / engineer</strong></td><td class="ro">Via PR only</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td><strong>Approver / lead</strong></td><td class="ro">Via PR</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        <tr><td><strong>Auditor</strong></td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><strong>Operators</strong> execute known-good automation against the arrays; they cannot change what it does.</li>
+    <li><strong>Authors</strong> propose changes through pull requests; they cannot merge their own work or deploy it.</li>
+    <li><strong>Approvers/leads</strong> review and merge, and hold production deployment rights &mdash; the decision of what becomes live.</li>
+    <li><strong>Auditors</strong> see everything (code, history, logs) and change nothing.</li>
+  </ul>
+</section>
+
+<section id="model">
+  <h2 class="sec"><span class="num">03</span> Two enforcement layers</h2>
+  <p>Authorization lives in two places, and both are needed. The Git layer controls <strong>who can change the automation</strong>; the OS layer controls <strong>who can run it on the box</strong>. A person could be allowed to edit code in Git but not run it in production, or run it but never edit it &mdash; the two layers are independent on purpose.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Question</th><th>Enforced by</th><th>Mechanism</th></tr></thead>
+      <tbody>
+        <tr><td>Who can change a playbook?</td><td>Git layer</td><td>Branch protection + required PR review + CODEOWNERS</td></tr>
+        <tr><td>Who can run a playbook on prod?</td><td>OS layer</td><td>Unix groups + scoped sudo on the mgmt node</td></tr>
+        <tr><td>Who did what, when?</td><td>Both</td><td>Signed commits + named accounts + sudo logs</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box crit">
+    <div class="h">The cardinal rule</div>
+    <strong>The production box is a read-only deployment target, never an editing surface.</strong> Nobody edits playbooks directly on the mgmt node. Changes happen in Git, get reviewed, merge to <code>main</code>, and the box <em>pulls</em> the result. This single inversion is what makes the whole model enforceable &mdash; if no one edits on the box, the only way to change automation is through the reviewed Git path.
+  </div>
+</section>
+
+<section id="git">
+  <h2 class="sec"><span class="num">04</span> Git layer: PR review</h2>
+  <p>Modern "authorized to edit" lives in Git. The repository is the source of truth; production pulls from it. Changes flow through pull requests so that editing and approving are separate acts by separate people.</p>
+  <h3>Teams map to roles</h3>
+  <p>On GitHub (or GitLab) create teams that mirror the roles, and add people to them:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Team</th><th>Repo permission</th><th>Can do</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">storage-engineers</td><td>Write</td><td>Push branches, open PRs &mdash; cannot merge to main</td></tr>
+        <tr><td class="mono-cell">storage-leads</td><td>Maintain</td><td>Review, approve, merge; manage branch settings</td></tr>
+        <tr><td class="mono-cell">storage-operators</td><td>Read</td><td>Clone/pull; run on the box (OS layer), no code change</td></tr>
+        <tr><td class="mono-cell">storage-auditors</td><td>Read</td><td>View code, history, PRs &mdash; nothing else</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>The branch model</h3>
+  <p>Engineers never commit to <code>main</code> directly. They branch, push, and open a PR:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>engineer's workstation</span><span>git</span></div>
+  <pre><span class="k">git</span> checkout -b feature/add-gad-playbook
+<span class="c"># edit playbooks/...</span>
+<span class="k">git</span> commit -S -m <span class="s">"Add GAD provisioning playbook"</span>   <span class="c"># -S = signed</span>
+<span class="k">git</span> push origin feature/add-gad-playbook
+<span class="c"># open a PR on GitHub → review → approve → merge to main</span></pre></div>
+  <p class="note">The <code>-S</code> flag signs the commit with the author's GPG/SSH key &mdash; cryptographic proof of who wrote it. Require signed commits in branch protection (next section) so unsigned commits are rejected.</p>
+</section>
+
+<section id="branch">
+  <h2 class="sec"><span class="num">05</span> Branch protection &amp; CODEOWNERS</h2>
+  <p>Branch protection is what makes review mandatory rather than optional. On GitHub: <strong>Settings &rarr; Branches &rarr; Add branch protection rule</strong> for <code>main</code>:</p>
+  <ul>
+    <li><strong>Require a pull request before merging</strong> &mdash; blocks all direct pushes to main.</li>
+    <li><strong>Require approvals</strong> (at least 1, often 2) &mdash; a PR cannot merge without sign-off.</li>
+    <li><strong>Dismiss stale approvals on new commits</strong> &mdash; re-review if the code changes after approval.</li>
+    <li><strong>Require review from Code Owners</strong> &mdash; ties approval to the right team per path.</li>
+    <li><strong>Require signed commits</strong> &mdash; rejects unsigned history.</li>
+    <li><strong>Require status checks</strong> &mdash; lint/CI must pass before merge (your <code>lint-check.sh</code> as a CI job).</li>
+    <li><strong>Do not allow bypassing</strong> &mdash; applies the rules even to admins.</li>
+    <li><strong>Restrict who can push</strong> &mdash; only <code>storage-leads</code> may merge.</li>
+  </ul>
+  <h3>CODEOWNERS &mdash; approval by path</h3>
+  <p>A <code>.github/CODEOWNERS</code> file requires that changes to specific paths get approval from a specific team. This is how you say "changes to production playbooks need a lead's sign-off":</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>.github/CODEOWNERS</span><span></span></div>
+  <pre><span class="c"># default owner for everything</span>
+*                       @org/storage-leads
+
+<span class="c"># production playbooks &amp; scripts need a lead</span>
+/playbooks/             @org/storage-leads
+/scripts/               @org/storage-leads
+
+<span class="c"># roles can be approved by engineers or leads</span>
+/roles/                 @org/storage-engineers @org/storage-leads
+
+<span class="c"># vault &amp; CI config: leads only</span>
+/group_vars/vault.yml   @org/storage-leads
+/.github/               @org/storage-leads</pre></div>
+  <div class="box tip">
+    <div class="h">CI as a gate, not just a check</div>
+    Wire <code>scripts/lint-check.sh</code> into a GitHub Actions workflow that runs on every PR. Make it a <em>required</em> status check in branch protection. Now a change that fails the 7-gate lint physically cannot merge &mdash; the same quality bar you use locally becomes an enforced production gate.
+  </div>
+</section>
+
+<section id="os">
+  <h2 class="sec"><span class="num">06</span> OS layer: groups &amp; users</h2>
+  <p>The Git layer controls the code. The OS layer controls execution on the mgmt node. The foundation is the elimination of shared root: <strong>named accounts only, role groups, and a service account that actually owns the project.</strong></p>
+  <h3>Service account owns the automation</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="c"># unprivileged service account that owns and runs the automation</span>
+<span class="k">useradd</span> -r -m -d /home/svc-ansible -s /bin/bash svc-ansible
+
+<span class="c"># role groups</span>
+<span class="k">groupadd</span> storage-operators
+<span class="k">groupadd</span> storage-leads
+
+<span class="c"># named human accounts — NO shared logins, NO shared keys</span>
+<span class="k">useradd</span> -m -G storage-operators alice
+<span class="k">useradd</span> -m -G storage-operators,storage-leads bob   <span class="c"># bob is also a lead</span>
+
+<span class="c"># each person installs their OWN ssh public key</span>
+<span class="k">mkdir</span> -p /home/alice/.ssh &amp;&amp; <span class="k">cp</span> alice.pub /home/alice/.ssh/authorized_keys
+<span class="k">chown</span> -R alice:alice /home/alice/.ssh; chmod 700 /home/alice/.ssh</pre></div>
+  <h3>Project ownership &amp; permissions</h3>
+  <p>The project is owned by the service account, group-readable by operators, and <strong>not writable</strong> by anyone but the deploy path:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">chown</span> -R svc-ansible:storage-operators /etc/ansible/Ansible_Simulator_Lab
+<span class="c"># operators: read + traverse + execute; NOT write</span>
+<span class="k">chmod</span> -R 750 /etc/ansible/Ansible_Simulator_Lab
+<span class="c"># vault password readable only by the service account</span>
+<span class="k">chown</span> svc-ansible:svc-ansible /etc/ansible/Ansible_Simulator_Lab/.vault_pass
+<span class="k">chmod</span> 600 /etc/ansible/Ansible_Simulator_Lab/.vault_pass</pre></div>
+  <div class="box warn">
+    <div class="h">Deploys pull as the service account</div>
+    Only the service account (or a lead via it) runs <code>git pull</code> to update the box from <code>main</code>. Operators never write to the directory &mdash; they only execute through the scoped sudo rule in the next section. This keeps the box a read-only target even for people who can run automation on it.
+  </div>
+</section>
+
+<section id="sudo">
+  <h2 class="sec"><span class="num">07</span> Scoped sudo rules</h2>
+  <p>Operators must <em>run</em> specific automation without gaining a root shell or the ability to edit. <code>sudo</code> grants named commands as the service account &mdash; nothing more. Edit via <code>visudo -f</code> so syntax errors can't lock you out:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>visudo -f /etc/sudoers.d/storage</span><span>root</span></div>
+  <pre><span class="c"># Operators may run the export wrapper and lab playbooks AS svc-ansible.</span>
+<span class="c"># They may NOT get a shell, edit files, or run arbitrary ansible.</span>
+<span class="v">Cmnd_Alias</span> LAB_RUN = \
+  /bin/bash /etc/ansible/Ansible_Simulator_Lab/scripts/run-facts-export.sh, \
+  /bin/bash /etc/ansible/Ansible_Simulator_Lab/scripts/run-facts-export-prod.sh, \
+  /usr/local/bin/ansible-playbook /etc/ansible/Ansible_Simulator_Lab/playbooks/0[0-9]-*.yml
+
+<span class="v">%storage-operators</span> ALL=(svc-ansible) NOPASSWD: LAB_RUN
+
+<span class="c"># Leads may also pull/deploy and re-baseline.</span>
+<span class="v">Cmnd_Alias</span> LAB_DEPLOY = \
+  /usr/bin/git -C /etc/ansible/Ansible_Simulator_Lab pull, \
+  /root/lab-verify.sh baseline
+
+<span class="v">%storage-leads</span> ALL=(svc-ansible) NOPASSWD: LAB_RUN, LAB_DEPLOY</pre></div>
+  <p>An operator then runs the export attributably, as the service account, without ever touching the files:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>alice@mgmt</span><span>operator</span></div>
+  <pre><span class="k">sudo</span> -u svc-ansible /bin/bash \
+  /etc/ansible/Ansible_Simulator_Lab/scripts/run-facts-export.sh</pre></div>
+  <div class="box crit">
+    <div class="h">Pitfalls that turn a scoped rule into root</div>
+    Never grant <code>sudo</code> to a command that can spawn a shell or read arbitrary files &mdash; <code>vi</code>, <code>less</code>, <code>find -exec</code>, <code>awk</code>, or a bare <code>ansible</code> with <code>-m shell</code> all become root shells. Scope to the <em>exact</em> wrapper scripts and the numbered playbooks only. Wildcards like <code>playbooks/*.yml</code> are acceptable; a wildcard that lets the user supply <code>-e</code> arbitrary modules is not. Audit the rule with <code>sudo -l -U alice</code>.
+  </div>
+</section>
+
+<section id="attribution">
+  <h2 class="sec"><span class="num">08</span> Attribution &amp; audit</h2>
+  <p>Authorization is half the goal; the other half is proving who did what. Every layer contributes a piece of the audit trail.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Action</th><th>Recorded by</th><th>Where to look</th></tr></thead>
+      <tbody>
+        <tr><td>Code change</td><td>Signed Git commit</td><td><code>git log --show-signature</code></td></tr>
+        <tr><td>Change approval</td><td>PR review record</td><td>GitHub PR history</td></tr>
+        <tr><td>Deploy (pull) to box</td><td>sudo log</td><td><code>journalctl /usr/bin/sudo</code></td></tr>
+        <tr><td>Playbook run</td><td>sudo log + Ansible</td><td><code>/var/log/secure</code>, ansible logs</td></tr>
+        <tr><td>File tampering</td><td>Checksum baseline</td><td><code>/root/lab-verify.sh check</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>The shared-root anti-pattern</h3>
+  <p>The single most important attribution rule: <strong>no shared <code>root</code> login, no shared SSH key.</strong> A shared account makes "who did this?" unanswerable &mdash; every action attributes to "root", i.e. to nobody. Disable direct root SSH and require named accounts:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>/etc/ssh/sshd_config</span><span>root</span></div>
+  <pre><span class="v">PermitRootLogin</span> no
+<span class="v">PasswordAuthentication</span> no
+<span class="v">AuthenticationMethods</span> publickey</pre></div>
+  <h3>Tamper baseline (catches what bypasses the process)</h3>
+  <p>Even with all controls, a checksum baseline proves whether on-box files match the approved state &mdash; catching anything that bypassed Git entirely:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="c"># after each deploy, re-baseline; check daily via cron</span>
+<span class="k">/root/lab-verify.sh</span> baseline
+( crontab -l; <span class="k">echo</span> <span class="s">"0 6 * * * /root/lab-verify.sh check | logger -t lab-verify"</span> ) | crontab -</pre></div>
+</section>
+
+<section id="flow">
+  <h2 class="sec"><span class="num">09</span> End-to-end deployment flow</h2>
+  <p>The whole model in motion &mdash; a change from idea to running on production, with authorization and attribution at every step:</p>
+  <div class="step"><div class="n">1</div><div class="body"><h4>AUTHOR</h4>
+    <p>An engineer branches, edits a playbook, signs the commit, pushes, and opens a pull request. They cannot push to <code>main</code> directly &mdash; branch protection blocks it.</p></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><h4>REVIEW</h4>
+    <p>CI runs <code>lint-check.sh</code> on the PR (required status check). A <code>storage-lead</code> reviews the diff; CODEOWNERS requires their approval for <code>/playbooks/</code>. The author cannot approve their own PR.</p></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><h4>MERGE</h4>
+    <p>On approval + green CI, a lead merges to <code>main</code>. The signed-commit requirement means the history is cryptographically attributable.</p></div></div>
+  <div class="step"><div class="n">4</div><div class="body"><h4>DEPLOY</h4>
+    <p>On the mgmt node, a lead pulls the reviewed <code>main</code> as the service account (<code>sudo -u svc-ansible git -C ... pull</code>), then re-baselines the checksum manifest. The box now matches approved state. Nobody edited anything on the box.</p></div></div>
+  <div class="step"><div class="n">5</div><div class="body"><h4>RUN</h4>
+    <p>An operator executes the playbook through the scoped sudo rule. The run is logged against their name. They could not have changed what the playbook does.</p></div></div>
+  <div class="box info">
+    <div class="h">No single point of unchecked power</div>
+    Notice no one person can both change automation and run it on production without review. The author can't merge or deploy; the operator can't edit; the lead's merges are signed and logged. That separation is the entire point &mdash; it makes both accidents and abuse require collusion or leave a trail.
+  </div>
+</section>
+
+<section id="checklist">
+  <h2 class="sec"><span class="num">10</span> Implementation checklist</h2>
+  <h3>Git layer</h3>
+  <ul>
+    <li>Repo private; create teams <code>storage-engineers</code> / <code>-leads</code> / <code>-operators</code> / <code>-auditors</code> with Write / Maintain / Read / Read.</li>
+    <li>Branch protection on <code>main</code>: require PR, require approvals, require Code Owner review, require signed commits, require status checks, no admin bypass, restrict merge to leads.</li>
+    <li>Add <code>.github/CODEOWNERS</code> mapping paths to teams.</li>
+    <li>Add a GitHub Actions workflow running <code>scripts/lint-check.sh</code>; mark it a required check.</li>
+  </ul>
+  <h3>OS layer</h3>
+  <ul>
+    <li>Create <code>svc-ansible</code> service account; create role groups; create named human accounts in the right groups.</li>
+    <li>Each person installs their own SSH key; disable <code>PermitRootLogin</code> and password auth.</li>
+    <li><code>chown svc-ansible:storage-operators</code> the project; <code>chmod 750</code>; vault pass <code>600</code> to the service account.</li>
+    <li>Author <code>/etc/sudoers.d/storage</code> via <code>visudo -f</code> with scoped <code>Cmnd_Alias</code> rules; verify with <code>sudo -l -U &lt;user&gt;</code>.</li>
+  </ul>
+  <h3>Attribution</h3>
+  <ul>
+    <li>No shared root / shared keys &mdash; named accounts only.</li>
+    <li>Enable signed commits; keep PR history.</li>
+    <li>Install <code>lab-verify.sh</code>; baseline after each deploy; daily <code>check</code> via cron to syslog.</li>
+    <li>Confirm sudo logging reaches <code>/var/log/secure</code> / journald.</li>
+  </ul>
+  <div class="box tip">
+    <div class="h">Scaling down without losing the shape</div>
+    A smaller team can collapse roles (one person may be engineer + lead) while keeping the <em>mechanisms</em>: still use PRs and branch protection even if you sometimes approve your own emergency change, still use named accounts and scoped sudo. The structure costs little once set up and builds the audit trail and habits that a growing team will need &mdash; far easier than retrofitting separation after an incident.
+  </div>
+  <div class="box info">
+    <div class="h">Relationship to the other documents</div>
+    This layer sits on top of the built lab (Documents 1&ndash;3), the production export (Document 4), and remote access (Document 6). The colleague onboarding in Document 6 &sect;9 grants <em>network</em> reach; this document grants <em>operational</em> rights. A person gets a WireGuard peer to reach the lab, and a role + group + sudo scope to act on it.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; Storage Automation &middot; Access Control &amp; Production Roles v4</span>
+  <span>Document 7 &middot; RBAC</span>
+</footer>
+
+</div>
+</body>
+</html>
