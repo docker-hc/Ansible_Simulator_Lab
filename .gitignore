@@ -4,3 +4,5 @@ wg0.conf
 *.key
 duckdns/
 *.bak
+__pycache__/
+*.pyc

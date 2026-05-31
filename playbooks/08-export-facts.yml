@@ -118,7 +118,7 @@
         - { name: "ldevs", data: "{{ ldev_facts.results }}" }
         - { name: "host_groups", data: "{{ hg_facts.results }}" }
         - { name: "host_mode_options", data: "{{ hmo_facts.results }}" }
-        - { name: "journals", data: "{{ journal_facts.results }}" }   
+        - { name: "journals", data: "{{ journal_facts.results }}" }
       loop_control:
         label: "{{ item.name }}"
 
@@ -161,7 +161,7 @@
           - "--out"
           - "{{ raw_dir }}/licenses.json"
       changed_when: false
-        
+
     - name: Show next step
       ansible.builtin.debug:
         msg: "Raw facts written to {{ raw_dir }}. Now run scripts/facts_to_xlsx.py"
