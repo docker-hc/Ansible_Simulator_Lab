@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara VSP Simulator Guide — VSP One B26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#020a0f; --bg2:#04101a; --panel:#060f16; --panel2:#081722;
+    --line:#0d3550; --line2:#13405e;
+    --cyan:#00c8f0; --cyan-dim:#0892b0; --green:#00e8a0; --amber:#f0c040;
+    --red:#ff6b6b; --navy:#1F3A5F;
+    --txt:#cfe6f2; --txt-dim:#7fa3b8; --muted:#4a7a95;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(0,232,160,.06), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--green); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--green)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:760px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--cyan); font-weight:700}
+  .chip.green b{color:var(--green)}
+  .chip.amber b{color:var(--amber)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--green)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--green)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--cyan-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--green);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--green); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--cyan); white-space:nowrap;}
+  .code{background:#030c12; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#1a3548; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .code pre .e{color:var(--red)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.07); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(0,200,240,.06); border-color:var(--cyan)}
+  .box.info .h{color:var(--cyan)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--cyan); font-size:12px}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--green); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--green); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Installation Guide</div>
+    <div>Troubleshooting Guide</div>
+    <div class="cur">&#9656; DOCUMENT 3 of 3</div>
+    <div>VSP Simulator Guide</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation Lab</div>
+  <h1>VSP Simulator Guide<br><span class="accent">integsim</span> &amp; the B26 personality</h1>
+  <p class="lede">How the integsim v10.2 simulator emulates a VSP One B26 array &mdash; the config generator, the clone workflow, the HORCM/IPCMD wiring from the array side, populating host groups for migration testing, and driving the facts toolchain against the simulated fleet.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip green">integsim <b>10.2.0-00</b></span>
+    <span class="chip">bundled CCI <b>01-76</b></span>
+    <span class="chip amber">REST + <b>IPCMD</b></span>
+    <span class="chip">4 <b>arrays</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#what">What integsim provides</a></li>
+    <li><a href="#layout">On-disk layout</a></li>
+    <li><a href="#config">customed_config.json</a></li>
+    <li><a href="#install">First-array install</a></li>
+    <li><a href="#clone">Cloning the fleet</a></li>
+    <li><a href="#ipcmd">HORCM / IPCMD wiring</a></li>
+    <li><a href="#hostgrp">Host groups &amp; WWNs</a></li>
+    <li><a href="#facts">Driving the facts toolchain</a></li>
+    <li><a href="#lifecycle">Lifecycle &amp; persistence</a></li>
+    <li><a href="#ref">Quick reference</a></li>
+  </ol>
+</nav>
+<section id="what">
+  <h2 class="sec"><span class="num">01</span> What integsim provides</h2>
+  <p>integsim v10.2 is Hitachi's storage simulator. Each instance presents the two interfaces an operator and an automation stack actually talk to: a <strong>REST Configuration Manager</strong> surface (used by SAM4H and by the <code>vspone_block</code> modules) and a <strong>CCI command device</strong> reached over the network via IPCMD (used by raidcom/HORCM). It bundles its own CCI build (v01-76) internally, separate from the v01-88-03/03 CCI on the management node.</p>
+  <p>In this lab, four integsim VMs each emulate one VSP One B26 array with a distinct serial number, microcode <code>A3-00-00/00</code>, and 285184 MB of cache. The arrays start empty &mdash; no pools, no LDEVs, host groups present but with zero initiators &mdash; which is the intended blank canvas for automation and migration rehearsal.</p>
+  <div class="box info">
+    <div class="h">Two surfaces, two auth paths</div>
+    REST auth and CCI auth both use <code>maintenance / raid-maintenance</code>, but they validate differently. REST checks integsim's own user table; CCI validates against the <strong>OS</strong> user (<code>extAuthFlg=1</code>). A working REST surface with failing raidcom almost always means the OS password drifted &mdash; see &sect;06.
+  </div>
+</section>
+
+<section id="layout">
+  <h2 class="sec"><span class="num">02</span> On-disk layout</h2>
+  <p>integsim installs under <code>/root/integsim</code>. The pieces that matter for building and operating an array:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Path</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">settings.txt</td><td>Top-level config &mdash; serial number, ports, runtime options</td></tr>
+        <tr><td class="mono-cell">setup.sh</td><td>One-time generator; consumes settings + the config JSON</td></tr>
+        <tr><td class="mono-cell">start.sh / stop.sh</td><td>Bring the simulated array up / down</td></tr>
+        <tr><td class="mono-cell">src/dkc-simulator/setup-dkc-simulator.sh</td><td>Inner generator; the JSONGEN patch target</td></tr>
+        <tr><td class="mono-cell">src/dkc-simulator/resource/generator/customed_config.json</td><td>The array personality definition</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">The simulator autostarts at boot from the simulator VM's own crontab: <code>@reboot /root/integsim/start.sh</code>. The management node never starts integsim &mdash; it only waits for the REST surface to answer.</p>
+</section>
+
+<section id="config">
+  <h2 class="sec"><span class="num">03</span> customed_config.json</h2>
+  <p>This file is the array's DNA. It defines the model identity, microcode string, cache size, controller ports, and the parity-group / drive layout that the generator turns into a running simulated array. The generator does <strong>not</strong> read it by default &mdash; it must be named explicitly (&sect;04).</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>customed_config.json &mdash; shape (illustrative)</span><span>json</span></div>
+    <pre>{
+  <span class="v">"model"</span>: <span class="s">"VSP One B26"</span>,
+  <span class="v">"serialNumber"</span>: <span class="s">"810294"</span>,
+  <span class="v">"microcodeVersion"</span>: <span class="s">"A3-00-00/00"</span>,
+  <span class="v">"cacheMB"</span>: <span class="s">285184</span>,
+  <span class="v">"controllerPorts"</span>: [ <span class="s">"CL1-A"</span>, <span class="s">"CL1-B"</span>, <span class="s">"CL2-A"</span>, <span class="s">"..."</span> ],
+  <span class="v">"parityGroups"</span>: [
+    { <span class="v">"id"</span>: <span class="s">"1-1"</span>, <span class="v">"raidLevel"</span>: <span class="s">"RAID6"</span>, <span class="v">"driveType"</span>: <span class="s">"SAS"</span> }
+  ],
+  <span class="v">"numberOfHbasPerHostGroup"</span>: <span class="s">0</span>
+}</pre>
+  </div>
+  <div class="box warn">
+    <div class="h">numberOfHbasPerHostGroup = 0</div>
+    The shipped config creates host groups with <strong>zero</strong> registered initiators. That is why the facts export's All-HBA-WWNs tab is empty on a fresh array and every host group is flagged empty. To rehearse a migration with real WWN data, raise this value or register WWNs after the array is up (&sect;07).
+  </div>
+</section>
+
+<section id="install">
+  <h2 class="sec"><span class="num">04</span> First-array install</h2>
+  <p>Build the first array (serial 810294) by hand; the rest are clones of it. Three dependencies trip people up, in this order.</p>
+
+  <div class="step"><div class="n">1</div><div class="body">
+    <h4>NGINX DEPENDENCY</h4>
+    <p>integsim's bundled nginx links <code>libcrypt.so.1</code>, dropped from default Rocky 9.</p>
+    <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+    <pre><span class="k">dnf</span> install -y libxcrypt-compat</pre></div>
+  </div></div>
+
+  <div class="step"><div class="n">2</div><div class="body">
+    <h4>POINT THE GENERATOR AT THE CONFIG</h4>
+    <p>The inner setup script defaults to a stock JSON. Patch it to use the B26 personality before running setup:</p>
+    <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+    <pre><span class="k">sed</span> -i <span class="s">'s/JSONGEN_FILENAME=.*/JSONGEN_FILENAME=customed_config.json/'</span> \
+    /root/integsim/src/dkc-simulator/setup-dkc-simulator.sh</pre></div>
+  </div></div>
+
+  <div class="step"><div class="n">3</div><div class="body">
+    <h4>SET SERIAL, RUN SETUP, START</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+    <pre><span class="k">sed</span> -i <span class="s">'s/^DKCSIM_SERIALNUM=.*/DKCSIM_SERIALNUM=810294/'</span> \
+    /root/integsim/settings.txt
+<span class="v">EXT_IP</span>=192.168.2.90 /root/integsim/setup.sh
+<span class="k">/root/integsim/start.sh</span></pre></div>
+    <p class="note"><code>EXT_IP</code> is the bridged address the REST/IPCMD surfaces bind to. It must match the VM's own bridged IP.</p>
+  </div></div>
+
+  <h3>Guest Additions (optional, for the shared folder)</h3>
+  <p>If the VM mounts <code>/mnt/vm_share</code>, Guest Additions needs kernel headers matching the running kernel:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+  <pre><span class="k">dnf</span> install -y gcc make kernel-devel-$(uname -r)</pre></div>
+
+  <h3>Verify the REST surface</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">curl</span> -sk -u maintenance:raid-maintenance \
+  https://192.168.2.90/ConfigurationManager/v1/objects/storages \
+  | jq -r <span class="s">'.data[0].serialNumber'</span>
+<span class="c"># -> 810294</span></pre></div>
+</section>
+
+<section id="clone">
+  <h2 class="sec"><span class="num">05</span> Cloning the fleet</h2>
+  <p>Arrays two through four are full VirtualBox clones of the first. A clone inherits two things that must be cleared before it will behave: the source's IP aliases and (on the mgmt side) its SSH host key.</p>
+  <div class="box crit">
+    <div class="h">Clear inherited aliases first</div>
+    The 810294 image carried stale aliases (<code>.93/.94/.95/.96</code>) that caused SSH from mgmt to land on the wrong VM. Strip them before assigning the clone's own address.
+  </div>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>freshly cloned sim VM &mdash; example: 840006</span><span>root</span></div>
+    <pre><span class="c"># 1 - clear inherited aliases</span>
+<span class="k">nmcli</span> con mod enp0s3 -ipv4.addresses 192.168.2.93/24
+<span class="k">nmcli</span> con mod enp0s3 -ipv4.addresses 192.168.2.94/24
+
+<span class="c"># 2 - this clone's identity</span>
+<span class="k">nmcli</span> con mod enp0s3 ipv4.addresses 192.168.2.93/24
+<span class="k">hostnamectl</span> set-hostname rocky9-sim-840006
+<span class="k">sed</span> -i <span class="s">'s/^DKCSIM_SERIALNUM=.*/DKCSIM_SERIALNUM=840006/'</span> /root/integsim/settings.txt
+
+<span class="c"># 3 - clones share a MAC seed: kill IPv6 dup-address noise</span>
+<span class="k">nmcli</span> con mod enp0s8 ipv6.method disabled
+
+<span class="c"># 4 - SSH from mgmt needs LEGACY crypto on a clean clone</span>
+<span class="k">update-crypto-policies</span> --set LEGACY &amp;&amp; systemctl restart sshd
+
+<span class="c"># 5 - regenerate the array for the new serial + IP</span>
+<span class="v">EXT_IP</span>=192.168.2.93 /root/integsim/setup.sh
+<span class="k">/root/integsim/start.sh</span></pre>
+  </div>
+  <p>On the mgmt node, drop any stale host key for a reused address:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">ssh-keygen</span> -R 192.168.2.92</pre></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Serial</th><th>Bridged IP</th><th>Hostname</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">810294</td><td class="mono-cell">192.168.2.90</td><td>rocky9-sim-810294 (built by hand)</td></tr>
+        <tr><td class="mono-cell">840006</td><td class="mono-cell">192.168.2.93</td><td>rocky9-sim-840006 (clone)</td></tr>
+        <tr><td class="mono-cell">845665</td><td class="mono-cell">192.168.2.92</td><td>rocky9-sim-845665 (clone)</td></tr>
+        <tr><td class="mono-cell">845666</td><td class="mono-cell">192.168.2.94</td><td>rocky9-sim-845666 (clone)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="ipcmd">
+  <h2 class="sec"><span class="num">06</span> HORCM / IPCMD wiring</h2>
+  <p>This is the part unique to a simulated array. A real VSP exposes a physical command device; integsim exposes a network command device that raidcom reaches through the IPCMD pseudo-path. The array side always listens on port <strong>31001</strong>.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>/etc/horcm1001.conf &mdash; mgmt node</span><span>full</span></div>
+    <pre><span class="v">HORCM_MON</span>
+192.168.2.91    34001    1000    3000
+
+<span class="v">HORCM_CMD</span>
+\\.\IPCMD-192.168.2.90-31001
+
+<span class="v">HORCM_INST</span>
+
+<span class="v">HORCM_LDEV</span></pre>
+  </div>
+  <ul>
+    <li><strong>HORCM_MON</strong> binds the mgmt node's own IP (192.168.2.91) on a unique monitor port (34001&ndash;34006). One port per instance, no overlap.</li>
+    <li><strong>HORCM_CMD</strong> is the IPCMD path to the <em>array</em>: <code>\\.\IPCMD-&lt;array-ip&gt;-31001</code>. Not a device file, not a bare IP.</li>
+  </ul>
+  <div class="box crit">
+    <div class="h">HORCM runs on mgmt only</div>
+    The simulator VMs already bind 31001 for integsim's IPCMD listener, so HORCM cannot run there. All instances live on the management node. This is why the lab keeps the array side at 31001 and the monitor side at 34xxx &mdash; they are different roles on different hosts.
+  </div>
+  <h3>Instance mapping &amp; the auto-assignment trap</h3>
+  <p>SAM4H assigns the HORCM instance number when it registers an array, and <strong>re-increments on every delete/re-add</strong>. During the build, 840006 moved 1002&rarr;1005 and 845665 moved 1003&rarr;1006 when they were re-added to fix a cache problem.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Serial</th><th>Array IP</th><th>Instance</th><th>MON port</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">810294</td><td class="mono-cell">192.168.2.90</td><td class="mono-cell">1001</td><td>34001</td></tr>
+        <tr><td class="mono-cell">845666</td><td class="mono-cell">192.168.2.94</td><td class="mono-cell">1004</td><td>34004</td></tr>
+        <tr><td class="mono-cell">840006</td><td class="mono-cell">192.168.2.93</td><td class="mono-cell">1005</td><td>34005</td></tr>
+        <tr><td class="mono-cell">845665</td><td class="mono-cell">192.168.2.92</td><td class="mono-cell">1006</td><td>34006</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>When the number changes, update three things in lockstep: the <code>/etc/horcmNNNN.conf</code> file, <code>group_vars/vault.yml</code>, and the instance list in <code>lab-startup.sh</code>. Then verify:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span>
+  <span class="k">raidqry</span> -l -IH${i} | grep -vE <span class="s">'^No|^$|^Group'</span> | head -1
+<span class="k">done</span></pre></div>
+  <div class="box warn">
+    <div class="h">CCI auth uses the OS user</div>
+    If raidcom login fails (and so SAM4H shows 0 Bytes cache), reset the OS password on the simulator: <code>echo 'maintenance:raid-maintenance' | chpasswd</code>, restart integsim, then re-trigger the SAM4H reload.
+  </div>
+</section>
+
+<section id="hostgrp">
+  <h2 class="sec"><span class="num">07</span> Host groups &amp; WWNs</h2>
+  <p>For migration rehearsal you want host groups that actually contain initiator WWNs, so the facts export captures meaningful login/registration data rather than an empty baseline.</p>
+  <h3>Inspect what exists</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node &mdash; via the array's instance</span><span>root</span></div>
+  <pre><span class="c"># list host groups on a port</span>
+<span class="k">raidcom</span> get host_grp -port CL1-A -I1001
+<span class="c"># list registered HBA WWNs in a host group</span>
+<span class="k">raidcom</span> get hba_wwn -port CL1-A-0 -I1001</pre></div>
+  <h3>Register an initiator WWN</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="c"># add a WWN to host group 0 on CL1-A, then nickname it</span>
+<span class="k">raidcom</span> add hba_wwn -port CL1-A-0 -hba_wwn 100000109b1a2b3c -I1001
+<span class="k">raidcom</span> set hba_wwn -port CL1-A-0 -hba_wwn 100000109b1a2b3c \
+    -wwn_nickname srv1_p0 -I1001</pre></div>
+  <div class="box info">
+    <div class="h">How the export reads this</div>
+    The facts toolchain captures WWNs two ways and merges them: <strong>logins</strong> seen by raidcom (<code>get hba_wwn</code>, source = <code>login</code>) and <strong>registered</strong> WWNs surfaced by the host-group module (source = <code>registered</code>). The same physical WWN may appear from both sources; the empty-host-group flag counts <em>distinct</em> WWNs, so it reads 1, not 2. A host group with no WWNs from either source is flagged <strong>empty</strong> (amber) &mdash; the migration signal for a placeholder with no initiators.
+  </div>
+  <p class="note">After registering WWNs, re-run the facts export: the All-HBA-WWNs tab fills, the host-group empty flag for that group clears, and the run-over-run diff shows the new WWN row highlighted green (added).</p>
+</section>
+
+<section id="facts">
+  <h2 class="sec"><span class="num">08</span> Driving the facts toolchain</h2>
+  <p>With the fleet up, the export runs against all four arrays from the project root. It reads the array list from <code>vault_arrays</code> in the vault, gathers six module fact types plus raidcom WWN logins, and builds the workbook with a diff against the previous run.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node &mdash; project root</span><span>root</span></div>
+  <pre><span class="k">cd</span> /etc/ansible/Ansible_Simulator_Lab
+<span class="k">bash</span> scripts/run-facts-export.sh
+
+<span class="c"># diff against a fixed baseline instead of last run:</span>
+<span class="k">cp</span> -r exports/raw exports/baseline   <span class="c"># capture once</span>
+<span class="k">bash</span> scripts/run-facts-export.sh --baseline exports/baseline</pre></div>
+  <h3>What lands where</h3>
+  <ul>
+    <li><code>exports/vsp_facts_&lt;date&gt;.xlsx</code> &mdash; Summary, Changes, four per-array tabs, six All-&lt;fact&gt; tabs, and All-HBA-WWNs.</li>
+    <li><code>exports/csv/*.csv</code> &mdash; flat mirror, one file per fact type plus <code>hba_wwn.csv</code> and <code>summary.csv</code>.</li>
+    <li><code>exports/history/&lt;timestamp&gt;/</code> &mdash; archived raw JSON (last 20 runs) used as the diff baseline.</li>
+    <li><code>/mnt/vm_share/vsp_facts_export/</code> &mdash; auto-copy for the Windows host (<code>D:\vsp_facts_export</code>).</li>
+  </ul>
+  <div class="box tip">
+    <div class="h">Reading the diff colours</div>
+    On the All-&lt;fact&gt; tabs: a fully green row is a newly added object; an amber cell is a changed field (old&rarr;new shown on the Changes tab); the host-group <code>empty</code> column is amber where a group has no initiators. Removed objects appear red on the Changes tab. A whole fact type showing as added+removed (never changed) means the diff key needs adjusting &mdash; see Troubleshooting F-2.
+  </div>
+</section>
+
+<section id="lifecycle">
+  <h2 class="sec"><span class="num">09</span> Lifecycle &amp; persistence</h2>
+  <h3>Start / stop a single array</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+  <pre><span class="k">/root/integsim/stop.sh</span>
+<span class="k">/root/integsim/start.sh</span>   <span class="c"># REST surface ready ~30-60s later</span></pre></div>
+
+  <h3>Whole-lab startup order</h3>
+  <p>The mgmt node's <code>lab-startup.sh</code> (cron <code>@reboot</code>) sequences the bring-up: network &rarr; SAM4H &rarr; wait for all four REST surfaces &rarr; start HORCM 1001/1004/1005/1006 &rarr; verify with raidqry. The simulator VMs bring integsim up themselves via their own crontab, so they are already booting when mgmt reaches the REST-wait loop. Full bring-up is about 90 seconds.</p>
+
+  <h3>Snapshots vs the real backup</h3>
+  <div class="box crit">
+    <div class="h">GitHub is the backup that matters</div>
+    VirtualBox snapshots share a base disk and can fail together. Snapshot for convenience, but treat the Git repository as authoritative: a full rebuild from a clean Rocky 9 image to a working four-array lab is under an hour with the repo intact. Snapshot names in use: mgmt <code>Rocky9-lab-vspb26-facts-export-may2026</code>; changed sims <code>sim-840006-may2026-v2</code>, <code>sim-845665-may2026-v2</code>.
+  </div>
+</section>
+
+<section id="ref">
+  <h2 class="sec"><span class="num">10</span> Quick reference</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Task</th><th>Command</th></tr></thead>
+      <tbody>
+        <tr><td>Verify REST surface</td><td class="mono-cell">curl -sk -u maintenance:raid-maintenance https://&lt;ip&gt;/ConfigurationManager/v1/objects/storages</td></tr>
+        <tr><td>Verify CCI / serial</td><td class="mono-cell">raidqry -l -IH&lt;inst&gt;</td></tr>
+        <tr><td>Start integsim</td><td class="mono-cell">/root/integsim/start.sh</td></tr>
+        <tr><td>Reset CCI OS password</td><td class="mono-cell">echo 'maintenance:raid-maintenance' | chpasswd</td></tr>
+        <tr><td>List host groups</td><td class="mono-cell">raidcom get host_grp -port CL1-A -I&lt;inst&gt;</td></tr>
+        <tr><td>List HBA WWNs</td><td class="mono-cell">raidcom get hba_wwn -port CL1-A-0 -I&lt;inst&gt;</td></tr>
+        <tr><td>Run facts export</td><td class="mono-cell">bash scripts/run-facts-export.sh</td></tr>
+        <tr><td>Show lab structure</td><td class="mono-cell">bash scripts/show-structure.sh</td></tr>
+        <tr><td>Lint before commit</td><td class="mono-cell">bash scripts/lint-check.sh</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Credentials &amp; endpoints</div>
+    REST/CCI: <code>maintenance / raid-maintenance</code> &middot; SAM4H UI: <code>https://192.168.2.91:8080</code> (root / Sam4h2026!) &middot; Cockpit: <code>https://192.168.2.91:9090</code> &middot; Repo: <code>git@github.com:docker-hc/Ansible_Simulator_Lab.git</code>
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; VSP One B26 Simulator Lab &middot; VSP Simulator Guide v4</span>
+  <span>Document 3 of 3 &middot; integsim 10.2</span>
+</footer>
+
+</div>
+</body>
+</html>

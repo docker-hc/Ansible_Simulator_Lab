@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Production Deployment — VSP Facts Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070611; --bg2:#0d0b1d; --panel:#0f0d1e; --panel2:#161331;
+    --line:#2a2450; --line2:#3a3270;
+    --violet:#9d8cff; --violet-dim:#6f5fd0; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#231d52;
+    --txt:#ddd8f2; --txt-dim:#a098c8; --muted:#6b6494;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(157,140,255,.08), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--violet); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--violet)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:760px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--violet); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.red b{color:var(--red)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--violet)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--violet)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--violet-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--violet);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--violet); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--violet); white-space:nowrap;}
+  .code{background:#0a0818; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#2a2450; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .code pre .e{color:var(--red)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(157,140,255,.08); border-color:var(--violet)}
+  .box.info .h{color:var(--violet)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--violet); font-size:12px}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--violet); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  .cmp{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:22px 0}
+  .cmp .col{border:1px solid var(--line); border-radius:10px; padding:18px 20px; background:var(--panel)}
+  .cmp .col h4{margin-top:0}
+  .cmp .lab h4{color:var(--cyan)}
+  .cmp .prod h4{color:var(--violet)}
+  .cmp ul{margin:0 0 0 18px; font-size:14px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--violet); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none} .cmp{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Installation Guide</div>
+    <div>Troubleshooting Guide</div>
+    <div>VSP Simulator Guide</div>
+    <div class="cur">&#9656; DOCUMENT 4</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>Production Deployment<br><span class="accent">Live VSP</span> Facts Export</h1>
+  <p class="lede">Taking the simulator-built facts-export toolchain to live VSP arrays from a single Linux collector &mdash; real command devices, least-privilege auth, on-demand runs, and the safety differences that matter when the target is production hardware.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip cyan">REST + <b>command device</b></span>
+    <span class="chip">1 <b>collector host</b></span>
+    <span class="chip red">on-demand <b>read-only</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#delta">Lab vs production</a></li>
+    <li><a href="#collector">The collector host</a></li>
+    <li><a href="#cmddev">Command device setup</a></li>
+    <li><a href="#auth">Authentication</a></li>
+    <li><a href="#inventory">Array inventory</a></li>
+    <li><a href="#horcm">HORCM for live arrays</a></li>
+    <li><a href="#wrapper">Production wrapper</a></li>
+    <li><a href="#run">On-demand run</a></li>
+    <li><a href="#scale">Scale &amp; safety</a></li>
+    <li><a href="#ref">Quick reference</a></li>
+  </ol>
+</nav>
+
+<section id="delta">
+  <h2 class="sec"><span class="num">01</span> Lab vs production</h2>
+  <p>The reporting layer is environment-agnostic and moves across unchanged. What differs is the connection layer beneath it: how raidcom reaches the array, which account it uses, and how cautious you must be. The decoupled design (gather &rarr; JSON &rarr; workbook) is what makes this a configuration change rather than a rewrite.</p>
+  <div class="cmp">
+    <div class="col lab">
+      <h4>LAB (simulator)</h4>
+      <ul>
+        <li>integsim IPCMD command device <code>\\.\IPCMD-ip-31001</code></li>
+        <li>SAM4H drives CCI reload; auto-assigns HORCM instances</li>
+        <li><code>maintenance</code> OS-auth account</li>
+        <li>Boot-time auto-start (cron <code>@reboot</code>)</li>
+        <li>Mutating the array is harmless</li>
+        <li>Tiny datasets; runs in seconds</li>
+      </ul>
+    </div>
+    <div class="col prod">
+      <h4>PRODUCTION (live VSP)</h4>
+      <ul>
+        <li>Real command device LDEV, <code>/dev/mapper/...</code> path</li>
+        <li>No SAM4H; REST API direct to the controller</li>
+        <li>Dedicated admin/service account, secret in Vault</li>
+        <li>On-demand only; HORCM up/down per run</li>
+        <li>Read-only command device &mdash; mutations must be impossible</li>
+        <li>Thousands of LDEVs; first run takes minutes</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box info">
+    <div class="h">What carries over untouched</div>
+    <code>08-export-facts.yml</code>, <code>facts_to_xlsx.py</code> (Summary, Changes, per-array, per-fact-type, All-HBA-WWNs, empty-HG flag), <code>facts_to_csv.py</code>, the diff engine, and the run-over-run highlighting. Only the connection layer changes.
+  </div>
+</section>
+
+<section id="collector">
+  <h2 class="sec"><span class="num">02</span> The collector host</h2>
+  <p>A single Linux host (RHEL/Rocky 8.9+ or equivalent) runs everything. It needs the automation stack, the collection, CCI, and routes to each array's REST endpoint and command device.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>collector &mdash; one-time setup</span><span>root</span></div>
+  <pre><span class="k">python3.11</span> -m pip install ansible-core==2.16.18 openpyxl
+<span class="k">ansible-galaxy</span> collection install hitachivantara.vspone_block:==4.8.1
+<span class="c"># CCI from the RMHORC bundle (provides raidcom, horcmstart.sh, raidqry)</span>
+<span class="c"># place the repo, e.g. /opt/vsp-reporting</span>
+<span class="k">git</span> clone git@github.com:&lt;org&gt;/vsp-reporting.git /opt/vsp-reporting</pre></div>
+  <ul>
+    <li><strong>Network:</strong> TCP 443 from the collector to each array's REST controller address.</li>
+    <li><strong>SAN/iSCSI:</strong> a path to each array carrying the presented command device LDEV.</li>
+    <li><strong>No SAM4H, no podman</strong> &mdash; those were lab-only.</li>
+  </ul>
+  <p class="note">Keep the same project layout as the lab so the scripts find their relative paths. <code>exports/</code> stays git-ignored; the workbook and CSVs are regenerable output.</p>
+</section>
+
+<section id="cmddev">
+  <h2 class="sec"><span class="num">03</span> Command device setup</h2>
+  <p>This is the one piece of real plumbing. The WWN-login gather needs raidcom, and raidcom on a live array needs a genuine command device &mdash; a small LDEV presented to the collector and flagged as a command device. The storage admin does the array side once; you identify and wire it on the collector.</p>
+
+  <div class="step"><div class="n">1</div><div class="body">
+    <h4>ARRAY SIDE (storage admin, once per array)</h4>
+    <p>Create or designate a small LDEV, set it as a <strong>command device</strong> with <strong>user authentication ON</strong> and <strong>read-only / device-protect ON</strong>, and present it to the collector's HBA/iSCSI initiator.</p>
+  </div></div>
+
+  <div class="step"><div class="n">2</div><div class="body">
+    <h4>COLLECTOR SIDE &mdash; identify the device</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>root</span></div>
+    <pre><span class="c"># rescan after the LUN is presented</span>
+<span class="k">rescan-scsi-bus.sh</span> || <span class="k">echo</span> 1 > /sys/class/scsi_host/host0/scan
+<span class="k">lsscsi</span> | grep -i hitachi
+<span class="k">ls</span> -l /dev/disk/by-id/        <span class="c"># find a stable path for the cmd device</span>
+<span class="c"># with multipath (FC):</span>
+<span class="k">multipath</span> -ll</pre></div>
+  </div></div>
+
+  <div class="step"><div class="n">3</div><div class="body">
+    <h4>USE A STABLE PATH</h4>
+    <p>Reference the command device by a path that survives reboots &mdash; a <code>/dev/mapper/</code> multipath name or a <code>/dev/disk/by-id/</code> link &mdash; never a bare <code>/dev/sdb</code>, which can renumber.</p>
+  </div></div>
+
+  <div class="box crit">
+    <div class="h">Read-only + user-auth is mandatory in production</div>
+    A read-only command device makes it impossible for any raidcom verb &mdash; or a fat-fingered command &mdash; to alter array configuration. User authentication ties command-device access to the service account. Both were optional in the lab and are non-negotiable against live hardware. The facts export only ever issues <code>raidcom get ...</code>, so read-only costs nothing.
+  </div>
+</section>
+
+<section id="auth">
+  <h2 class="sec"><span class="num">04</span> Authentication</h2>
+  <p>You are using an existing admin account. That works, but treat it with production discipline: the secret lives only in Ansible Vault, never on the command line or in a playbook, and the same credential is reused for both REST (module <code>connection_info</code>) and the command-device user-auth.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>ansible-vault edit group_vars/vault.yml</span><span>encrypted</span></div>
+  <pre><span class="v">vault_raidcom_user</span>: <span class="s">"svc_storage_admin"</span>
+<span class="v">vault_raidcom_password</span>: <span class="s">"&lt;secret&gt;"</span></pre></div>
+  <div class="box warn">
+    <div class="h">Prefer least privilege where you can</div>
+    A read-only / monitoring role is safer than a full admin account for a reporting job, and pairs naturally with a read-only command device. If account creation isn't an option right now, the read-only command device still prevents config changes via CCI &mdash; the REST modules used here are all <code>_facts</code> (read) modules regardless.
+  </div>
+</section>
+
+<section id="inventory">
+  <h2 class="sec"><span class="num">05</span> Array inventory</h2>
+  <p>Each live array is one entry in <code>vault_arrays</code> &mdash; the same structure the lab used, now pointing at production controller addresses and a real HORCM instance per array.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>group_vars/vault.yml</span><span>encrypted</span></div>
+  <pre><span class="v">vault_arrays</span>:
+  - <span class="v">serial</span>: <span class="s">350001</span>
+    <span class="v">model</span>: <span class="s">"VSP One B26"</span>
+    <span class="v">controller_ip_0</span>: <span class="s">10.20.30.41</span>   <span class="c"># REST endpoint</span>
+    <span class="v">horcm_instance</span>: <span class="s">0</span>              <span class="c"># matches /etc/horcm0.conf</span>
+  - <span class="v">serial</span>: <span class="s">350002</span>
+    <span class="v">model</span>: <span class="s">"VSP One B26"</span>
+    <span class="v">controller_ip_0</span>: <span class="s">10.20.30.42</span>
+    <span class="v">horcm_instance</span>: <span class="s">1</span></pre></div>
+  <p>The playbook and workbook builders loop this list with no code change. Adding an array is one block here plus its HORCM config file.</p>
+</section>
+
+<section id="horcm">
+  <h2 class="sec"><span class="num">06</span> HORCM for live arrays</h2>
+  <p>The only change from the lab HORCM config is the <code>HORCM_CMD</code> line: a real device path replaces the IPCMD form. Everything <code>gather_hba_wwn.py</code> does &mdash; calling <code>raidcom ... -IH&lt;inst&gt;</code> &mdash; is identical.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>/etc/horcm0.conf &mdash; live array</span><span>full</span></div>
+  <pre><span class="v">HORCM_MON</span>
+localhost   34000   1000   3000
+
+<span class="v">HORCM_CMD</span>
+/dev/mapper/360060e8012abcd00...      <span class="c"># real command device (stable path)</span>
+
+<span class="v">HORCM_INST</span>
+
+<span class="v">HORCM_LDEV</span></pre></div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Field</th><th>Lab (simulator)</th><th>Production (live)</th></tr></thead>
+      <tbody>
+        <tr><td>HORCM_CMD</td><td class="mono-cell">\\.\IPCMD-ip-31001</td><td class="mono-cell">/dev/mapper/&lt;wwid&gt;</td></tr>
+        <tr><td>HORCM_MON host</td><td class="mono-cell">192.168.2.91</td><td class="mono-cell">localhost</td></tr>
+        <tr><td>Instance source</td><td>SAM4H auto-assigns</td><td>You choose (0,1,2&hellip;)</td></tr>
+        <tr><td>Auth</td><td>OS user</td><td>Command-device user-auth</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Verify each instance reaches its array before a full run:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>root</span></div>
+  <pre><span class="k">horcmstart.sh</span> 0 1
+<span class="k">raidcom</span> -login svc_storage_admin &lt;secret&gt; -I0
+<span class="k">raidqry</span> -l -I0      <span class="c"># confirm the right serial answers</span></pre></div>
+</section>
+
+<section id="wrapper">
+  <h2 class="sec"><span class="num">07</span> Production wrapper</h2>
+  <p>The lab wrapper auto-started at boot and copied to a Windows share. The production variant is the opposite: it brings HORCM up only for the run, tears it down on exit (even on error, via <code>trap</code>), and writes outputs locally. Instance numbers are derived from the vault so there is one source of truth.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>scripts/run-facts-export-prod.sh</span><span>bash</span></div>
+  <pre><span class="c">#!/bin/bash</span>
+<span class="c"># On-demand production facts export. Read-only against live arrays.</span>
+<span class="k">set</span> -euo pipefail
+<span class="k">cd</span> <span class="s">"$(dirname "$0")/.."</span>
+
+<span class="c"># derive HORCM instances from the vault array list</span>
+INSTANCES=$(ansible localhost -m debug \
+  -a <span class="s">"var=vault_arrays"</span> -e @group_vars/vault.yml 2>/dev/null \
+  | grep -oP <span class="s">'"horcm_instance":\s*\K[0-9]+'</span> | sort -u | tr <span class="s">'\n'</span> <span class="s">' '</span>)
+[ -z <span class="s">"$INSTANCES"</span> ] &amp;&amp; { <span class="k">echo</span> <span class="s">"no instances in vault"</span>; exit 1; }
+
+<span class="c"># bring HORCM up; guarantee shutdown on any exit</span>
+<span class="k">horcmstart.sh</span> $INSTANCES
+<span class="k">trap</span> <span class="s">'horcmshutdown.sh $INSTANCES >/dev/null 2>&amp;1 || true'</span> EXIT
+
+<span class="c"># 1 - gather (REST facts + raidcom WWN logins)</span>
+<span class="k">ansible-playbook</span> playbooks/08-export-facts.yml
+<span class="c"># 2 - workbook with run-over-run diff</span>
+<span class="k">python3.11</span> scripts/facts_to_xlsx.py --raw exports/raw
+<span class="c"># 3 - CSV mirror</span>
+<span class="k">python3.11</span> scripts/facts_to_csv.py --raw exports/raw --out exports/csv
+<span class="c"># 4 - archive this run; keep last 60 for production history</span>
+STAMP=$(date +%Y-%m-%d_%H%M%S)
+<span class="k">mkdir</span> -p <span class="s">"exports/history/$STAMP"</span>
+<span class="k">cp</span> -f exports/raw/*.json <span class="s">"exports/history/$STAMP/"</span>
+<span class="k">ls</span> -1dt exports/history/*/ | tail -n +61 | xargs -r rm -rf
+
+<span class="k">echo</span> <span class="s">"Done: $(ls -1t exports/*.xlsx | head -1)"</span></pre></div>
+  <div class="box tip">
+    <div class="h">Why the trap matters</div>
+    <code>trap '... ' EXIT</code> runs the HORCM shutdown whether the playbook succeeds, fails, or is interrupted. Against production you never want HORCM left running attached to a live command device after an aborted job.
+  </div>
+</section>
+
+<section id="run">
+  <h2 class="sec"><span class="num">08</span> On-demand run</h2>
+  <p>The whole operation is one command, run when you want a snapshot &mdash; before/after a change window, during an audit, or to feed a migration plan.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>operator</span></div>
+  <pre><span class="k">cd</span> /opt/vsp-reporting
+<span class="k">bash</span> scripts/run-facts-export-prod.sh</pre></div>
+  <h3>Diff against a fixed point</h3>
+  <p>For change-window verification, capture a baseline before the change and diff the after-run against it:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>operator</span></div>
+  <pre><span class="c"># before the change</span>
+<span class="k">bash</span> scripts/run-facts-export-prod.sh
+<span class="k">cp</span> -r exports/raw exports/baseline_change123
+
+<span class="c"># after the change &mdash; highlight exactly what moved</span>
+<span class="k">bash</span> scripts/run-facts-export-prod.sh
+<span class="k">python3.11</span> scripts/facts_to_xlsx.py --raw exports/raw \
+       --prev exports/baseline_change123</pre></div>
+  <div class="box info">
+    <div class="h">This is where the diff earns its keep</div>
+    On live arrays the Changes tab answers the real question: what changed since I last looked? A new LDEV, a host group that gained a WWN, a pool that grew, a port that went offline &mdash; each surfaces green/amber/red without reading thousands of rows by hand.
+  </div>
+</section>
+
+<section id="scale">
+  <h2 class="sec"><span class="num">09</span> Scale &amp; safety</h2>
+  <h3>Dataset size</h3>
+  <p>Real arrays return far more than the simulators. The <code>ldev</code> fact in particular can run to thousands of rows. The workbook handles it, but the first run may take minutes and the per-array LDEV section gets long. If LDEV volume is unwieldy, add a flag to summarise (count + capacity rollup) instead of enumerating every LDEV on the per-array tabs, keeping the full list on the <code>All-LDEVs</code> tab and the CSV.</p>
+  <h3>Diff keys on real microcode</h3>
+  <p>The diff identity fields were validated against simulator output. Pools and host groups are the most likely to use a different key on production microcode. If a first run-over-run diff shows a whole fact type as all-added + all-removed (never changed), adjust <code>KEY_FIELDS</code> in <code>facts_to_xlsx.py</code> &mdash; see Troubleshooting F-2.</p>
+  <h3>Safety posture</h3>
+  <ul>
+    <li><strong>Read-only command device</strong> + <strong>_facts modules only</strong> &mdash; the job cannot mutate config by design.</li>
+    <li><strong>HORCM up/down per run</strong> via the trap &mdash; nothing persists against the array between runs.</li>
+    <li><strong>Secret in Vault only</strong> &mdash; never on the command line, never echoed.</li>
+    <li><strong>Stable command-device path</strong> &mdash; <code>by-id</code>/<code>mapper</code>, so a reboot can't point HORCM at the wrong LUN.</li>
+    <li><strong>Run in a maintenance/observation window</strong> if your change-control process requires it, even for read-only access.</li>
+  </ul>
+  <div class="box crit">
+    <div class="h">The one rule that separates lab from production</div>
+    In the lab, a wrong command harmed nothing. Against live hardware, the read-only user-authenticated command device is the guardrail that keeps a reporting job from ever becoming a change. Set it up once, verify it, and the rest of the toolchain is as safe as it was in the lab.
+  </div>
+</section>
+
+<section id="ref">
+  <h2 class="sec"><span class="num">10</span> Quick reference</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Task</th><th>Command</th></tr></thead>
+      <tbody>
+        <tr><td>Identify command device</td><td class="mono-cell">lsscsi | grep -i hitachi ; multipath -ll</td></tr>
+        <tr><td>Start HORCM (per run)</td><td class="mono-cell">horcmstart.sh 0 1</td></tr>
+        <tr><td>Verify array reachable</td><td class="mono-cell">raidqry -l -I0</td></tr>
+        <tr><td>Run export (on-demand)</td><td class="mono-cell">bash scripts/run-facts-export-prod.sh</td></tr>
+        <tr><td>Diff vs baseline</td><td class="mono-cell">facts_to_xlsx.py --raw exports/raw --prev exports/baseline_X</td></tr>
+        <tr><td>Stop HORCM</td><td class="mono-cell">horcmshutdown.sh 0 1</td></tr>
+        <tr><td>Edit vault</td><td class="mono-cell">ansible-vault edit group_vars/vault.yml</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Relationship to the other documents</div>
+    The toolchain internals are in the Installation Guide (&sect;11) and Troubleshooting Guide (&sect;05); the raidcom/host-group mechanics are in the VSP Simulator Guide (&sect;06&ndash;07). This document changes only the connection layer for live arrays &mdash; read it alongside, not instead of, those three.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; VSP Facts Export &middot; Production Deployment Guide v4</span>
+  <span>Document 4 &middot; Live systems</span>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Multi-Model Support — VSP Facts Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04100c; --bg2:#06160f; --panel:#08180f; --panel2:#0c2418;
+    --line:#1d4030; --line2:#2a5a42;
+    --teal:#2fd9a0; --teal-dim:#1f9e74; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#163d2c;
+    --txt:#d4ecdf; --txt-dim:#8fb8a4; --muted:#5e8a73;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(47,217,160,.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--teal); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--teal)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:780px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--teal); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.amber b{color:var(--amber)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--teal)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--teal)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--teal-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--teal);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--teal); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--teal); white-space:nowrap;}
+  .code{background:#06140d; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#1d4030; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(47,217,160,.08); border-color:var(--teal)}
+  .box.info .h{color:var(--teal)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--teal); font-size:12px}
+  .yes{color:var(--green); font-weight:700}
+  .maybe{color:var(--amber); font-weight:700}
+  .no{color:var(--red); font-weight:700}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--teal); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--teal); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Installation &middot; Troubleshooting</div>
+    <div>Simulator &middot; Production</div>
+    <div class="cur">&#9656; DOCUMENT 5</div>
+    <div>Multi-Model Support</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>Multi-Model Support<br><span class="accent">B26 &middot; B85 &middot; High End</span> findings</h1>
+  <p class="lede">Whether the facts-export toolchain and the vspone_block 4.8.1 collection cover models beyond the B26 &mdash; specifically the VSP One Block 85 and the High End tier &mdash; and whether any per-model YAML files are needed. Findings as of May 2026.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip cyan">collection <b>4.8.1</b></span>
+    <span class="chip">one playbook <b>all models</b></span>
+    <span class="chip amber">verify B85 <b>live</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#tldr">Summary</a></li>
+    <li><a href="#models">Model identification</a></li>
+    <li><a href="#matrix">Support matrix</a></li>
+    <li><a href="#yaml">Per-model YAML?</a></li>
+    <li><a href="#version">Collection version</a></li>
+    <li><a href="#b85">The B85 caveat</a></li>
+    <li><a href="#verify">Verifying a live array</a></li>
+    <li><a href="#refs">Sources</a></li>
+  </ol>
+</nav>
+
+<section id="tldr">
+  <h2 class="sec"><span class="num">01</span> Summary</h2>
+  <p>Three questions were raised: does the toolchain support the VSP One 360 and B85; are different YAML files used per model; and are they available. Short answers:</p>
+  <ul>
+    <li><strong>B26</strong> &mdash; supported and proven. It is explicitly listed in the 4.8.1 hardware table.</li>
+    <li><strong>B85</strong> &mdash; the B85 <em>is</em> the VSP One Block High End product, and the High End tier is listed in the 4.8.1 table, so it is expected to work &mdash; but the B85 is a different, multi-controller architecture released after 4.8.1's docs, so its topology-aware facts should be verified live before relying on them.</li>
+    <li><strong>"VSP One 360"</strong> &mdash; not a model name in the current portfolio; the high-end tier is branded <strong>VSP One Block High End</strong>. If "360" is an internal/reseller label, it maps to that same High End row.</li>
+    <li><strong>Per-model YAML</strong> &mdash; <span class="no">No.</span> One playbook and one script set cover every model. There is nothing per-model to download or maintain.</li>
+    <li><strong>Collection version</strong> &mdash; 4.8.1 is the current published release; nothing newer to upgrade to right now.</li>
+  </ul>
+  <div class="box info">
+    <div class="h">The one-line takeaway</div>
+    The facts-export toolchain is model-agnostic by design. A B26, a B85, and a High End array are just separate entries in <code>vault_arrays</code>. The only open item is verifying the B85's multi-controller topology facts against a live unit.
+  </div>
+</section>
+
+<section id="models">
+  <h2 class="sec"><span class="num">02</span> Model identification</h2>
+  <p>The VSP One Block portfolio now spans seven models. The "B85" maps to the High End product; there is no model literally named "360".</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Family member</th><th>Class</th><th>Architecture</th><th>In 4.8.1 table?</th></tr></thead>
+      <tbody>
+        <tr><td>VSP One Block 24 / 24 QLC</td><td>Entry</td><td>Dual-controller</td><td class="yes">Yes</td></tr>
+        <tr><td>VSP One Block 26 / 26 QLC</td><td>Mid (lab model)</td><td>Dual-controller</td><td class="yes">Yes</td></tr>
+        <tr><td>VSP One Block 28 / 28 QLC</td><td>Mid-high</td><td>Dual-controller</td><td class="yes">Yes</td></tr>
+        <tr><td>VSP One Block 85 (TLC)</td><td>High End</td><td>Multi-controller (node-pairs)</td><td class="maybe">As "High End"</td></tr>
+        <tr><td>"VSP One 360"</td><td>n/a</td><td>n/a</td><td class="no">Not a model name</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">The B85 starts as an 18 RU appliance and scales to 50 RU, in 2 / 4 / 6 node-pair configurations &mdash; each node has two controllers. The 24&ndash;28 models are conventional dual-controller systems. That architectural difference is the crux of the B85 caveat in &sect;06.</p>
+</section>
+
+<section id="matrix">
+  <h2 class="sec"><span class="num">03</span> Support matrix</h2>
+  <p>The toolchain uses only the <code>vsp</code> namespace <code>hv_*_facts</code> modules. These are model-agnostic across the whole VSP block family the collection targets (VSP One Block, VSP 5000, VSP E, VSP F, VSP G).</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Fact module</th><th>B26</th><th>B85 / High End</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">hv_storagesystem_facts</td><td class="yes">Yes</td><td class="maybe">Verify</td><td>Identity, microcode, capacity, efficiency</td></tr>
+        <tr><td class="mono-cell">hv_paritygroup_facts</td><td class="yes">Yes</td><td class="maybe">Verify</td><td>Topology-aware &mdash; check on multi-controller</td></tr>
+        <tr><td class="mono-cell">hv_storage_port_facts</td><td class="yes">Yes</td><td class="maybe">Verify</td><td>Topology-aware &mdash; most controllers to enumerate</td></tr>
+        <tr><td class="mono-cell">hv_storagepool_facts</td><td class="yes">Yes</td><td class="yes">Expected</td><td>Logical &mdash; should be unaffected by architecture</td></tr>
+        <tr><td class="mono-cell">hv_ldev_facts</td><td class="yes">Yes</td><td class="yes">Expected</td><td>Logical &mdash; expect far higher counts on B85</td></tr>
+        <tr><td class="mono-cell">hv_hg_facts</td><td class="yes">Yes</td><td class="yes">Expected</td><td>Logical &mdash; host groups + WWNs</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><span class="yes">Yes</span> = listed/proven. <span class="maybe">Verify</span> = expected to work; confirm against the live B85 because of the multi-controller topology. <span class="yes">Expected</span> = logical facts not tied to controller layout.</p>
+</section>
+
+<section id="yaml">
+  <h2 class="sec"><span class="num">04</span> Per-model YAML?</h2>
+  <p>No &mdash; and this is the key efficiency of the design.</p>
+  <h3>One playbook, all models</h3>
+  <p><code>08-export-facts.yml</code> loops <code>vault_arrays</code> and calls the same six fact modules for every entry, regardless of model. A mixed fleet &mdash; B26, B85, High End &mdash; lives in one inventory and runs through one playbook. There is no "B85 module" versus a "B26 module"; the collection ships one set of <code>vsp.hv_*</code> modules that span the family.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>group_vars/vault.yml &mdash; a mixed fleet</span><span>encrypted</span></div>
+  <pre><span class="v">vault_arrays</span>:
+  - <span class="v">serial</span>: <span class="s">350001</span>
+    <span class="v">model</span>: <span class="s">"VSP One Block 26"</span>
+    <span class="v">controller_ip_0</span>: <span class="s">10.20.30.41</span>
+    <span class="v">horcm_instance</span>: <span class="s">0</span>
+  - <span class="v">serial</span>: <span class="s">490001</span>
+    <span class="v">model</span>: <span class="s">"VSP One Block 85"</span>       <span class="c"># same structure</span>
+    <span class="v">controller_ip_0</span>: <span class="s">10.20.30.51</span>
+    <span class="v">horcm_instance</span>: <span class="s">1</span></pre></div>
+  <h3>Are they available?</h3>
+  <p>Every module the toolchain needs is already present in 4.8.1. There is no per-model YAML to fetch. The vendor <code>vsp_direct/</code> example playbooks are likewise generic across the family.</p>
+  <div class="box tip">
+    <div class="h">What scales when you add a model</div>
+    Adding any array &mdash; any model &mdash; is one block in <code>vault_arrays</code> plus its HORCM config file (for the WWN-login gather). The playbook, the workbook builder, the CSV builder, and the diff need zero changes.
+  </div>
+</section>
+
+<section id="version">
+  <h2 class="sec"><span class="num">05</span> Collection version</h2>
+  <p>The newest published <code>vspone_block</code> release is <strong>4.8.1</strong> &mdash; already installed in the lab. Community-docs and Red Hat-catalog mirrors lag (showing 4.5.1 / 4.6.1), but those are documentation snapshots, not the latest Galaxy artifact.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>root</span></div>
+  <pre><span class="c"># confirm what's installed</span>
+<span class="k">ansible-galaxy</span> collection list | grep vspone_block
+<span class="c"># pull the newest when a &gt;4.8.1 ships (re-check for B85 coverage then)</span>
+<span class="k">ansible-galaxy</span> collection install hitachivantara.vspone_block --upgrade</pre></div>
+  <div class="box warn">
+    <div class="h">Re-check on the next release</div>
+    Because the B85 launched after 4.8.1's documentation, a future collection release is the most likely place full, documented B85 multi-controller coverage lands. When one ships, upgrade and re-run the live verification in &sect;07.
+  </div>
+</section>
+
+<section id="b85">
+  <h2 class="sec"><span class="num">06</span> The B85 caveat</h2>
+  <p>The reason B85 is "verify" rather than a flat "yes" is architecture, not module naming.</p>
+  <ul>
+    <li>The B85 <strong>is</strong> the VSP One Block High End product, and High End <strong>is</strong> a listed row in the 4.8.1 hardware table &mdash; so support is expected.</li>
+    <li>But the B85 is a <strong>multi-controller, node-pair</strong> system (2/4/6 node-pairs, two controllers each), unlike the dual-controller 24&ndash;28. It also launched <strong>after</strong> the 4.8.1 documentation was written.</li>
+    <li>The facts most sensitive to that difference are the <strong>topology-aware</strong> ones &mdash; ports and parity groups &mdash; where a multi-controller layout has far more to enumerate. Logical facts (system, pools, LDEVs, host groups) are not tied to controller count and should behave normally.</li>
+  </ul>
+  <div class="box crit">
+    <div class="h">Don't trust the table alone for a new architecture</div>
+    A row in a hardware table is necessary but not sufficient evidence for a brand-new multi-controller platform. The five-minute, read-only live check in &sect;07 is how you confirm it rather than assume it.
+  </div>
+</section>
+
+<section id="verify">
+  <h2 class="sec"><span class="num">07</span> Verifying a live array</h2>
+  <p>A read-only, non-disruptive check. If all three return complete data, the existing toolchain works on the B85 unchanged.</p>
+  <div class="step"><div class="n">1</div><div class="body">
+    <h4>IDENTITY FIRST</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>root</span></div>
+    <pre><span class="k">ansible-playbook</span> playbooks/vsp_direct/storagesystem_facts.yml \
+  -e <span class="s">"storage_address=&lt;b85-ip&gt; \
+      vault_storage_username=&lt;user&gt; vault_storage_secret=&lt;pw&gt;"</span></pre></div>
+    <p class="note">Expect: serial, model, microcode, total/free capacity, efficiency. If clean, the logical layer is fine.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div class="body">
+    <h4>THEN THE TOPOLOGY-AWARE FACTS</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>collector</span><span>root</span></div>
+    <pre><span class="k">ansible-playbook</span> playbooks/vsp_direct/paritygroup_facts.yml -e <span class="s">"..."</span>
+<span class="k">ansible-playbook</span> playbooks/vsp_direct/storage_port_facts.yml -e <span class="s">"..."</span></pre></div>
+    <p class="note">These are the multi-controller-sensitive ones. Complete output across all controllers/node-pairs = the B85 is fully covered.</p>
+  </div></div>
+  <div class="step"><div class="n">3</div><div class="body">
+    <h4>INTERPRET</h4>
+    <ul>
+      <li><span class="yes">All three complete</span> &rarr; run the full <code>run-facts-export</code> against the B85; no changes needed.</li>
+      <li><span class="maybe">Partial / empty topology facts</span> &rarr; the toolchain still reports what it gets; treat ports/parity as incomplete and re-check after the next collection upgrade.</li>
+      <li><span class="amber">Diff shows all-added/all-removed</span> for a fact type &rarr; identity key differs on this microcode; adjust <code>KEY_FIELDS</code> (Troubleshooting F-2).</li>
+    </ul>
+  </div></div>
+  <div class="box warn">
+    <div class="h">Confirm microcode meets the minimum</div>
+    Below-minimum firmware causes partial facts regardless of collection version. Minimums: VSP One Block 26 &rarr; <code>A3-05-21-40/00 / SVOS 10.5.2</code>; High End / B85 &rarr; <code>A0-05-41-00_01 / SVOS 10.5.3</code>. Check the running version on each target before concluding a module is unsupported.
+  </div>
+</section>
+
+<section id="refs">
+  <h2 class="sec"><span class="num">08</span> Sources</h2>
+  <p>Findings drawn from the collection's own 4.8.1 README hardware table (uploaded) plus public product/portfolio material current to late 2025 / May 2026:</p>
+  <ul>
+    <li><strong>vspone_block 4.8.1 README</strong> &mdash; hardware-requirements table listing VSP One Block 24/26/28 and VSP One Block High End with minimum microcode/SVOS.</li>
+    <li><strong>Hitachi Vantara product pages &amp; spec sheets</strong> &mdash; VSP One Block portfolio (seven models: 24, 24 QLC, 26, 26 QLC, 28, 28 QLC, 85 TLC); High End launch Nov 2025.</li>
+    <li><strong>Industry coverage (Blocks &amp; Files, Nov 2025)</strong> &mdash; confirmation that the 85 TLC is the High End product, uses the latest ADR, and is a multi-controller node-pair architecture.</li>
+    <li><strong>Ansible Galaxy / Red Hat catalog</strong> &mdash; current published collection version 4.8.1; docs mirrors lag at 4.5.1/4.6.1.</li>
+  </ul>
+  <div class="box info">
+    <div class="h">Validity window</div>
+    Accurate as of May 2026. Model lineup and collection support evolve; re-verify the support matrix and version when a collection release later than 4.8.1 appears, and always trust a live read-only check over a documentation table for a new architecture.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; VSP Facts Export &middot; Multi-Model Support Findings v4</span>
+  <span>Document 5 &middot; May 2026</span>
+</footer>
+</div>
+</body>
+</html>

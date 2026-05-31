@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Installation Guide — VSP One B26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#020a0f; --bg2:#04101a; --panel:#060f16; --panel2:#081722;
+    --line:#0d3550; --line2:#13405e;
+    --cyan:#00c8f0; --cyan-dim:#0892b0; --green:#00e8a0; --amber:#f0c040;
+    --red:#ff6b6b; --navy:#1F3A5F;
+    --txt:#cfe6f2; --txt-dim:#7fa3b8; --muted:#4a7a95;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(0,200,240,.06), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,232,160,.05), transparent 45%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+
+  /* ── header ── */
+  header.masthead{
+    padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:"▸"; color:var(--green)}
+  h1{
+    font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;
+  }
+  h1 .accent{color:var(--cyan)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:760px}
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;
+  }
+  .chip{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);
+  }
+  .chip b{color:var(--cyan); font-weight:700}
+  .chip.green b{color:var(--green)}
+  .chip.amber b{color:var(--amber)}
+  .doc-tag{
+    position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;
+  }
+  .doc-tag .cur{color:var(--cyan)}
+
+  /* ── TOC ── */
+  nav.toc{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;
+  }
+  nav.toc h2{
+    font-family:var(--mono); font-size:13px; letter-spacing:2px; color:var(--green);
+    text-transform:uppercase; margin-bottom:18px;
+  }
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{
+    color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;
+  }
+  nav.toc a:hover{color:var(--cyan)}
+  nav.toc a::before{
+    content:counter(toc,decimal-leading-zero); font-family:var(--mono);
+    font-size:12px; color:var(--cyan-dim); flex-shrink:0;
+  }
+
+  /* ── sections ── */
+  section{margin-bottom:64px; scroll-margin-top:24px}
+  h2.sec{
+    font-size:27px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:24px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;
+  }
+  h2.sec .num{
+    font-family:var(--mono); font-size:15px; color:var(--cyan);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px;
+    flex-shrink:0;
+  }
+  h3{
+    font-size:19px; font-weight:700; color:var(--cyan); margin:34px 0 14px;
+    letter-spacing:-.2px;
+  }
+  h4{
+    font-size:15px; font-weight:700; color:var(--green); margin:24px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;
+  }
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  a.inline{color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan-dim)}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{
+    font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--cyan); white-space:nowrap;
+  }
+
+  /* ── code blocks ── */
+  .code{
+    background:#030c12; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;
+  }
+  .code .bar{
+    background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px;
+    color:var(--muted); letter-spacing:1px; display:flex;
+    justify-content:space-between; align-items:center;
+  }
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#1a3548; margin-right:6px; vertical-align:middle}
+  .code pre{
+    padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:13px; line-height:1.65; color:var(--txt);
+  }
+  .code pre .c{color:var(--muted)}        /* comment */
+  .code pre .k{color:var(--cyan)}         /* keyword/cmd */
+  .code pre .s{color:var(--green)}        /* string/value */
+  .code pre .v{color:var(--amber)}        /* var */
+  .code pre .p{color:var(--txt-dim)}      /* prompt */
+
+  /* ── callouts ── */
+  .box{
+    border-radius:10px; padding:18px 22px; margin:20px 0;
+    border-left:3px solid; font-size:15px;
+  }
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.07); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(0,200,240,.06); border-color:var(--cyan)}
+  .box.info .h{color:var(--cyan)}
+
+  /* ── tables ── */
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line);
+    border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--cyan); font-size:12px}
+
+  /* ── figure ── */
+  figure{margin:26px 0; border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; background:#020a0f}
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{font-family:var(--mono); font-size:11px; color:var(--muted);
+    padding:10px 16px; border-top:1px solid var(--line); letter-spacing:.5px}
+
+  /* ── step ── */
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--cyan); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--cyan); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="doc-tag">
+    <div class="cur">▸ DOCUMENT 1 of 3</div>
+    <div>Installation Guide</div>
+    <div>Troubleshooting Guide</div>
+    <div>VSP Simulator Guide</div>
+  </div>
+  <div class="eyebrow">HitachiVantara · Storage Automation Lab</div>
+  <h1>Installation Guide<br><span class="accent">VSP One B26</span> Simulator Lab</h1>
+  <p class="lede">Building a four-array Hitachi VSP One B26 simulator environment on Rocky Linux 9.7 — integsim, SAM4H, CCI/HORCM, and Ansible automation with the <code>hitachivantara.vspone_block</code> collection.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip">Rocky Linux <b>9.7</b></span>
+    <span class="chip green">SAM4H <b>2.4.3b</b></span>
+    <span class="chip">CCI <b>01-88-03/03</b></span>
+    <span class="chip green">vspone_block <b>4.8.1</b></span>
+    <span class="chip amber">4 × <b>integsim 10.2</b></span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#arch">Lab architecture &amp; network</a></li>
+    <li><a href="#host">Host prerequisites (Rocky 9)</a></li>
+    <li><a href="#mgmt">Management node build</a></li>
+    <li><a href="#sam4h">SAM4H deployment</a></li>
+    <li><a href="#cci">CCI &amp; HORCM setup</a></li>
+    <li><a href="#integsim">integsim array build</a></li>
+    <li><a href="#clone">Cloning additional arrays</a></li>
+    <li><a href="#register">Registering arrays in SAM4H</a></li>
+    <li><a href="#ansible">Ansible project structure</a></li>
+    <li><a href="#vspone">vspone_block collection</a></li>
+    <li><a href="#facts">Facts-export toolchain</a></li>
+    <li><a href="#startup">Startup &amp; persistence</a></li>
+  </ol>
+</nav>
+
+<section id="arch">
+  <h2 class="sec"><span class="num">01</span> Lab architecture &amp; network</h2>
+  <p>The lab runs entirely inside VirtualBox on a Windows host. A single management node carries Ansible, SAM4H, and CCI/HORCM; four integsim virtual machines each emulate one VSP One B26 array; two lightweight RHEL nodes stand in as storage hosts. Two networks separate concerns: a <strong>bridged</strong> network (192.168.2.0/24) for real-world reachability and SAM4H/REST traffic, and an <strong>internal</strong> network (192.168.56.0/24) for Ansible control.</p>
+
+  <figure>
+    <!-- lab-architecture.svg inlined -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 760" font-family="'DejaVu Sans Mono',monospace">
+  <defs>
+    <style>
+      .bg{fill:#020a0f}
+      .card{fill:#060f16;stroke:#0d3550;stroke-width:1.5;rx:8}
+      .mgmt{stroke:#00c8f0;stroke-width:2}
+      .sim{stroke:#00e8a0;stroke-width:1.5}
+      .node{stroke:#4a7a95;stroke-width:1.5}
+      .host{stroke:#f0c040;stroke-width:1.5}
+      .title{fill:#fff;font-size:15px;font-weight:bold}
+      .sub{fill:#4a7a95;font-size:10px}
+      .ip{fill:#00c8f0;font-size:10px}
+      .ipg{fill:#00e8a0;font-size:10px}
+      .lbl{fill:#b8d8e8;font-size:11px}
+      .role{fill:#b8d8e8;font-size:10px}
+      .net{fill:#005f75;font-size:11px;font-weight:bold}
+      .netg{fill:#006644;font-size:11px;font-weight:bold}
+      .eyebrow{fill:#00c8f0;font-size:11px;font-weight:bold;letter-spacing:2px}
+      .hdr{fill:#f0c040;font-size:10px;font-weight:bold}
+      .line{stroke:#0d3550;stroke-width:1.5}
+      .lineb{stroke:#005f75;stroke-width:2;stroke-dasharray:4 3}
+      .lineg{stroke:#006644;stroke-width:2;stroke-dasharray:4 3}
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1100" height="760"/>
+  <text class="eyebrow" x="40" y="42">▸ HITACHI VSP ONE B26 LAB — ARCHITECTURE</text>
+  <text class="sub" x="40" y="62">VirtualBox on Windows host · Rocky Linux 9.7 · 4 integsim arrays · SAM4H v2.4.3b · CCI 01-88-03/03</text>
+
+  <!-- Windows host outer frame -->
+  <rect class="card host" x="30" y="80" width="1040" height="660" rx="10" fill="#04080c"/>
+  <text class="hdr" x="48" y="104">WINDOWS HOST · VirtualBox · D:\ → /mnt/vm_share</text>
+
+  <!-- Bridged network bar -->
+  <rect x="48" y="120" width="1004" height="26" rx="5" fill="#001820" stroke="#005f75" stroke-width="1.5"/>
+  <text class="net" x="60" y="138">BRIDGED NETWORK · 192.168.2.0/24 · gw 192.168.2.254</text>
+
+  <!-- Internal network bar -->
+  <rect x="48" y="600" width="1004" height="26" rx="5" fill="#001810" stroke="#006644" stroke-width="1.5"/>
+  <text class="netg" x="60" y="618">INTERNAL NETWORK · Ansible-lab · 192.168.56.0/24</text>
+
+  <!-- MGMT NODE -->
+  <rect class="card mgmt" x="60" y="180" width="300" height="180" rx="8"/>
+  <text class="title" x="76" y="206">Rocky9-Ansible-Mgmt</text>
+  <text class="sub" x="76" y="222">Rocky Linux 9.7 · 16GB</text>
+  <text class="role" x="76" y="246">▪ Ansible control (core 2.16.18)</text>
+  <text class="role" x="76" y="264">▪ SAM4H v2.4.3b (podman ×4)</text>
+  <text class="role" x="76" y="282">▪ CCI 01-88-03/03 + HORCM</text>
+  <text class="role" x="76" y="300">▪ HORCM inst 1001/1004/1005/1006</text>
+  <text class="ip" x="76" y="324">bridged 192.168.2.91</text>
+  <text class="ipg" x="76" y="340">internal 192.168.56.11</text>
+
+  <!-- connect mgmt to both nets -->
+  <line class="lineb" x1="210" y1="180" x2="210" y2="146"/>
+  <line class="lineg" x1="300" y1="360" x2="300" y2="600"/>
+
+  <!-- SIM ARRAYS (4) -->
+  <!-- 810294 -->
+  <rect class="card sim" x="400" y="170" width="200" height="120" rx="8"/>
+  <text class="title" x="414" y="194" font-size="13">sim-810294</text>
+  <text class="sub" x="414" y="210">integsim v10.2</text>
+  <text class="role" x="414" y="230">HORCM 1001</text>
+  <text class="ip" x="414" y="250">192.168.2.90</text>
+  <text class="sub" x="414" y="268">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="500" y1="170" x2="500" y2="146"/>
+
+  <!-- 845666 -->
+  <rect class="card sim" x="620" y="170" width="200" height="120" rx="8"/>
+  <text class="title" x="634" y="194" font-size="13">sim-845666</text>
+  <text class="sub" x="634" y="210">integsim v10.2</text>
+  <text class="role" x="634" y="230">HORCM 1004</text>
+  <text class="ip" x="634" y="250">192.168.2.94</text>
+  <text class="sub" x="634" y="268">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="720" y1="170" x2="720" y2="146"/>
+
+  <!-- 840006 -->
+  <rect class="card sim" x="400" y="310" width="200" height="120" rx="8"/>
+  <text class="title" x="414" y="334" font-size="13">sim-840006</text>
+  <text class="sub" x="414" y="350">integsim v10.2</text>
+  <text class="role" x="414" y="370">HORCM 1005</text>
+  <text class="ip" x="414" y="390">192.168.2.93</text>
+  <text class="sub" x="414" y="408">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="500" y1="310" x2="500" y2="146"/>
+
+  <!-- 845665 -->
+  <rect class="card sim" x="620" y="310" width="200" height="120" rx="8"/>
+  <text class="title" x="634" y="334" font-size="13">sim-845665</text>
+  <text class="sub" x="634" y="350">integsim v10.2</text>
+  <text class="role" x="634" y="370">HORCM 1006</text>
+  <text class="ip" x="634" y="390">192.168.2.92</text>
+  <text class="sub" x="634" y="408">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="720" y1="310" x2="720" y2="146"/>
+
+  <!-- HORCM/IPCMD callout -->
+  <rect x="860" y="180" width="180" height="250" rx="8" fill="#001820" stroke="#00c8f0" stroke-width="1.5"/>
+  <text class="hdr" x="874" y="204" fill="#00c8f0">HORCM ON MGMT ONLY</text>
+  <text class="role" x="874" y="226">HORCM_CMD per array:</text>
+  <text class="sub" x="874" y="244">\\.\IPCMD-&lt;ip&gt;-31001</text>
+  <text class="role" x="874" y="268">HORCM_MON ports:</text>
+  <text class="sub" x="874" y="286">34001 / 34004 /</text>
+  <text class="sub" x="874" y="302">34005 / 34006</text>
+  <text class="role" x="874" y="326">SAM4H auto-assigns</text>
+  <text class="sub" x="874" y="344">instance numbers;</text>
+  <text class="sub" x="874" y="360">re-add re-increments</text>
+  <text class="role" x="874" y="386">REST verify:</text>
+  <text class="sub" x="874" y="404">curl -sk -u maint…</text>
+  <text class="sub" x="874" y="420">/ConfigurationManager</text>
+
+  <!-- DKC NODES -->
+  <rect class="card node" x="400" y="470" width="200" height="110" rx="8"/>
+  <text class="title" x="414" y="494" font-size="13">Rhel-DKC-Node1</text>
+  <text class="sub" x="414" y="510">RHEL 7.9 · 2GB</text>
+  <text class="role" x="414" y="530">storage-host sim</text>
+  <text class="ipg" x="414" y="552">192.168.56.21</text>
+  <line class="lineg" x1="500" y1="580" x2="500" y2="600"/>
+
+  <rect class="card node" x="620" y="470" width="200" height="110" rx="8"/>
+  <text class="title" x="634" y="494" font-size="13">Rhel-DKC-Node2</text>
+  <text class="sub" x="634" y="510">RHEL 7.9 · 2GB</text>
+  <text class="role" x="634" y="530">storage-host sim</text>
+  <text class="ipg" x="634" y="552">192.168.56.22</text>
+  <line class="lineg" x1="720" y1="580" x2="720" y2="600"/>
+
+  <!-- legend -->
+  <text class="sub" x="60" y="670">Legend:</text>
+  <rect x="120" y="660" width="14" height="14" rx="3" fill="none" class="mgmt"/>
+  <text class="lbl" x="140" y="671">mgmt</text>
+  <rect x="200" y="660" width="14" height="14" rx="3" fill="none" class="sim"/>
+  <text class="lbl" x="220" y="671">integsim array</text>
+  <rect x="330" y="660" width="14" height="14" rx="3" fill="none" class="node"/>
+  <text class="lbl" x="350" y="671">storage host</text>
+  <line class="lineb" x1="450" y1="667" x2="480" y2="667"/>
+  <text class="lbl" x="488" y="671">bridged</text>
+  <line class="lineg" x1="560" y1="667" x2="590" y2="667"/>
+  <text class="lbl" x="598" y="671">internal</text>
+
+  <text class="sub" x="60" y="710">SAM4H UI → https://192.168.2.91:8080   ·   Cockpit → https://192.168.2.91:9090   ·   GitHub: docker-hc/Ansible_Simulator_Lab</text>
+</svg>
+    <figcaption>FIG 1 · Lab topology — management node, four integsim arrays, two storage hosts, dual networks</figcaption>
+  </figure>
+
+  <div class="box info">
+    <div class="h">Why Rocky 9, not RHEL 10</div>
+    The host CPU is an Intel i7-8550U (Kaby Lake), which supports only the <code>x86-64-v2</code> microarchitecture level. RHEL 10 requires <code>x86-64-v3</code> and will fail to boot on pre-2019 Intel silicon. Rocky Linux 9.7 is the correct base for this hardware.
+  </div>
+
+  <h3>VM inventory</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>VM</th><th>Hostname</th><th>Bridged</th><th>Internal</th><th>RAM</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>Rocky9-Ansible-Mgmt</td><td class="mono-cell">rocky9-ansible-mgmt</td><td class="mono-cell">192.168.2.91</td><td class="mono-cell">192.168.56.11</td><td>16 GB</td><td>Ansible · SAM4H · CCI/HORCM</td></tr>
+        <tr><td>rocky9-sim-810294</td><td class="mono-cell">…-810294</td><td class="mono-cell">192.168.2.90</td><td class="mono-cell">192.168.56.10</td><td>8 GB</td><td>integsim serial 810294</td></tr>
+        <tr><td>rocky9-sim-840006</td><td class="mono-cell">…-840006</td><td class="mono-cell">192.168.2.93</td><td class="mono-cell">192.168.56.13</td><td>8 GB</td><td>integsim serial 840006</td></tr>
+        <tr><td>rocky9-sim-845665</td><td class="mono-cell">…-845665</td><td class="mono-cell">192.168.2.92</td><td class="mono-cell">192.168.56.12</td><td>8 GB</td><td>integsim serial 845665</td></tr>
+        <tr><td>rocky9-sim-845666</td><td class="mono-cell">…-845666</td><td class="mono-cell">192.168.2.94</td><td class="mono-cell">192.168.56.14</td><td>8 GB</td><td>integsim serial 845666</td></tr>
+        <tr><td>Rhel-DKC-Node1</td><td class="mono-cell">rhel-dkc-node1</td><td>—</td><td class="mono-cell">192.168.56.21</td><td>2 GB</td><td>storage-host sim (RHEL 7.9)</td></tr>
+        <tr><td>Rhel-DKC-Node2</td><td class="mono-cell">rhel-dkc-node2</td><td>—</td><td class="mono-cell">192.168.56.22</td><td>2 GB</td><td>storage-host sim (RHEL 7.9)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Hostnames mirror array serial numbers, which keeps SSH targets, HORCM mapping, and facts output legible at a glance.</p>
+</section>
+
+<section id="host">
+  <h2 class="sec"><span class="num">02</span> Host prerequisites (Rocky 9)</h2>
+  <p>Every VM starts from a minimal Rocky Linux 9.7 install. The management node needs the fullest package set; the simulator VMs need a base plus build tooling for VirtualBox Guest Additions and integsim's nginx dependency.</p>
+
+  <h3>Base packages (all nodes)</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — all nodes</span><span>root</span></div>
+    <pre><span class="c"># EPEL for shellcheck and assorted tooling</span>
+<span class="k">dnf</span> install -y epel-release
+<span class="k">dnf</span> install -y git curl wget tar vim tree jq \
+    gcc make kernel-devel-$(uname -r) elfutils-libelf-devel \
+    python3.11 python3.11-pip shellcheck</pre>
+  </div>
+
+  <div class="box warn">
+    <div class="h">Use python3.11 for the automation stack</div>
+    System Python on Rocky 9 is 3.9 and caps <code>ansible-core</code> at 2.15.13. The lab standardises on <code>python3.11 -m pip</code> for ansible-core 2.16.18, ansible-lint, yamllint, and openpyxl. Mixing the two interpreters is the most common cause of "module not found" at runtime.
+  </div>
+
+  <h3>Kernel quiet-boot (cosmetic)</h3>
+  <p>integsim and HORCM are chatty at the console. Trim kernel verbosity so the serial console stays readable across reboots:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — all nodes</span><span>root</span></div>
+    <pre><span class="k">grubby</span> --update-kernel=ALL --args=<span class="s">"quiet loglevel=3"</span>
+<span class="k">grub2-mkconfig</span> -o /boot/grub2/grub.cfg</pre>
+  </div>
+</section>
+
+<section id="mgmt">
+  <h2 class="sec"><span class="num">03</span> Management node build</h2>
+  <p>The management node is the only host that operators log into. It runs the Ansible control process, the SAM4H container stack, and all HORCM instances.</p>
+
+  <h3>Ansible control stack</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">python3.11</span> -m pip install ansible-core==2.16.18 ansible-lint yamllint openpyxl
+<span class="k">ansible-galaxy</span> collection install ansible.posix brocade.fos \
+    hitachivantara.vspone_block:==4.8.1</pre>
+  </div>
+
+  <h3>Vault &amp; SSH key material</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="c"># Vault password file (referenced from ansible.cfg)</span>
+<span class="k">echo</span> <span class="s">'VaultMaster2026!'</span> > /root/.vault_pass
+<span class="k">chmod</span> 600 /root/.vault_pass
+
+<span class="c"># Dedicated lab key + a separate GitHub key</span>
+<span class="k">ssh-keygen</span> -t ed25519 -f /root/.ssh/ansible -N <span class="s">''</span>
+<span class="k">ssh-keygen</span> -t ed25519 -f /root/.ssh/github  -N <span class="s">''</span></pre>
+  </div>
+
+  <div class="box crit">
+    <div class="h">GitHub is the real backup</div>
+    VirtualBox snapshots share a base disk and can corrupt together. The authoritative backup is the Git repository <code>git@github.com:docker-hc/Ansible_Simulator_Lab.git</code>. A full rebuild from a clean Rocky 9 image to a working lab takes under an hour when the repo is intact. Commit after every milestone.
+  </div>
+</section>
+
+<section id="sam4h">
+  <h2 class="sec"><span class="num">04</span> SAM4H deployment</h2>
+  <p>Storage Advisor for Hitachi (SAM4H v2.4.3b) ships as a container stack run under Podman. It provides the registration UI and drives the CCI reload that populates each array's cache and microcode view.</p>
+
+  <h3>Podman prerequisites</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">dnf</span> install -y podman podman-docker podman-compose
+<span class="k">ln</span> -s /usr/bin/podman-compose /usr/bin/docker-compose
+<span class="k">systemctl</span> enable --now podman.socket</pre>
+  </div>
+
+  <h4>RESTART ON UI 500</h4>
+  <p>A first-boot race in <code>aardvark-dns</code> can leave the UI returning HTTP 500. Restarting the service after the containers settle clears it:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">systemctl</span> restart sam4h.service
+<span class="k">sleep</span> 30
+<span class="k">podman</span> ps --format <span class="s">"{{.Names}} {{.Status}}"</span></pre>
+  </div>
+  <p class="note">The UI is reachable at <code>https://192.168.2.91:8080</code>. Default first login is <code>root / Root1234</code>; the lab password is <code>Sam4h2026!</code>.</p>
+</section>
+
+<section id="cci">
+  <h2 class="sec"><span class="num">05</span> CCI &amp; HORCM setup</h2>
+  <p>CCI (Command Control Interface) is installed from the RMHORC cpio bundle. All HORCM instances run on the management node only — the simulator VMs already occupy port 31001 with integsim's IPCMD listener, so HORCM cannot also bind there.</p>
+
+  <h3>HORCM_CMD uses the IPCMD form</h3>
+  <p>This is the single most important detail of the HORCM configuration. integsim arrays are reached through a special command-device URL, not a real device path and not a plain IP:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>/etc/horcm1001.conf — mgmt node</span><span>excerpt</span></div>
+    <pre><span class="v">HORCM_MON</span>
+192.168.2.91    34001    1000    3000
+
+<span class="v">HORCM_CMD</span>
+\\.\IPCMD-192.168.2.90-31001</pre>
+  </div>
+
+  <div class="box info">
+    <div class="h">HORCM_MON port allocation</div>
+    Every instance needs a unique monitor port. integsim's listener owns 31001 on each array, so HORCM_MON ports are placed at 34001–34006 to avoid any collision. The command path stays at the IPCMD <code>…-31001</code> form because that is the array side, reached over the network.
+  </div>
+
+  <h3>Instance ↔ array mapping</h3>
+  <p>SAM4H <strong>auto-assigns</strong> HORCM instance numbers and re-increments them whenever an array is deleted and re-added. The current mapping reflects a mid-build re-registration of two arrays:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Serial</th><th>Array IP</th><th>HORCM inst</th><th>Config file</th><th>MON port</th><th>HORCM_CMD</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">810294</td><td class="mono-cell">192.168.2.90</td><td class="mono-cell">1001</td><td>horcm1001.conf</td><td>34001</td><td class="mono-cell">…-192.168.2.90-31001</td></tr>
+        <tr><td class="mono-cell">845666</td><td class="mono-cell">192.168.2.94</td><td class="mono-cell">1004</td><td>horcm1004.conf</td><td>34004</td><td class="mono-cell">…-192.168.2.94-31001</td></tr>
+        <tr><td class="mono-cell">840006</td><td class="mono-cell">192.168.2.93</td><td class="mono-cell">1005</td><td>horcm1005.conf</td><td>34005</td><td class="mono-cell">…-192.168.2.93-31001</td></tr>
+        <tr><td class="mono-cell">845665</td><td class="mono-cell">192.168.2.92</td><td class="mono-cell">1006</td><td>horcm1006.conf</td><td>34006</td><td class="mono-cell">…-192.168.2.92-31001</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box warn">
+    <div class="h">Edit, don't delete-and-re-add</div>
+    Because SAM4H re-increments on re-add (840006 moved 1002→1005, 845665 moved 1003→1006), avoid deleting an array to fix it. Edit the existing record instead. If you must re-add, expect a new instance number and update <code>group_vars/vault.yml</code>, the HORCM config files, and <code>lab-startup.sh</code> to match.
+  </div>
+
+  <h3>Verify each instance</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span>
+  <span class="k">echo</span> -n <span class="s">"HORCM $i: "</span>
+  <span class="k">raidqry</span> -l -IH${i} | grep -vE <span class="s">'^No|^$|^Group'</span> | head -1
+<span class="k">done</span></pre>
+  </div>
+  <p class="note">Each line should report the matching serial, microcode <code>A3-00-00/00</code>, and cache 285184 MB.</p>
+</section>
+
+<section id="integsim">
+  <h2 class="sec"><span class="num">06</span> integsim array build</h2>
+  <p>integsim v10.2 emulates a full VSP One B26 REST/CCI surface. Each simulator VM runs one instance bound to a unique serial number. The build has three fiddly dependencies that are easy to miss.</p>
+
+  <div class="step">
+    <div class="n">1</div><div class="body">
+      <h4>NGINX NEEDS LIBXCRYPT-COMPAT</h4>
+      <p>integsim's bundled nginx links against <code>libcrypt.so.1</code>, which Rocky 9 no longer ships by default.</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>bash — sim VM</span><span>root</span></div>
+      <pre><span class="k">dnf</span> install -y libxcrypt-compat</pre></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">2</div><div class="body">
+      <h4>CONFIG GENERATOR PATCH</h4>
+      <p>The array personality is defined in <code>customed_config.json</code> under the generator resource directory. The setup script must be pointed at it before first run.</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>bash — sim VM</span><span>root</span></div>
+      <pre><span class="c"># config lives here:</span>
+<span class="p">/root/integsim/src/dkc-simulator/resource/generator/customed_config.json</span>
+
+<span class="c"># point the generator at it (one-time sed on the setup script)</span>
+<span class="k">sed</span> -i <span class="s">'s/JSONGEN_FILENAME=.*/JSONGEN_FILENAME=customed_config.json/'</span> \
+    /root/integsim/src/dkc-simulator/setup-dkc-simulator.sh</pre></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="n">3</div><div class="body">
+      <h4>SET SERIAL, THEN RUN SETUP</h4>
+      <div class="code"><div class="bar"><span><span class="dot"></span>bash — sim VM</span><span>root</span></div>
+      <pre><span class="k">sed</span> -i <span class="s">'s/^DKCSIM_SERIALNUM=.*/DKCSIM_SERIALNUM=810294/'</span> \
+    /root/integsim/settings.txt
+<span class="v">EXT_IP</span>=192.168.2.90 /root/integsim/setup.sh
+<span class="k">/root/integsim/start.sh</span></pre></div>
+    </div>
+  </div>
+
+  <h3>SSH from the mgmt node — LEGACY crypto</h3>
+  <p>A clean Rocky 9 clone uses the DEFAULT crypto policy, which the mgmt node's newer OpenSSL rejects with <code>kex_exchange_identification: Connection reset by peer</code>. Set LEGACY on each simulator:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — sim VM</span><span>root</span></div>
+    <pre><span class="k">update-crypto-policies</span> --set LEGACY
+<span class="k">systemctl</span> restart sshd</pre>
+  </div>
+
+  <h3>Verify the REST surface</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">curl</span> -sk -u maintenance:raid-maintenance \
+  https://192.168.2.90/ConfigurationManager/v1/objects/storages \
+  | jq -r <span class="s">'.data[0].serialNumber'</span></pre>
+  </div>
+  <p class="note">The <code>maintenance / raid-maintenance</code> credential is OS-authenticated (<code>extAuthFlg=1</code>) — the OS user <code>maintenance</code> (uid 1000) must exist with that password. Reset with <code>echo 'maintenance:raid-maintenance' | chpasswd</code> if CCI auth fails.</p>
+</section>
+
+<section id="clone">
+  <h2 class="sec"><span class="num">07</span> Cloning additional arrays</h2>
+  <p>Arrays two through four are full clones of the first working simulator. The order of operations matters — the cloned image inherits the source's IP aliases and SSH host key, both of which must be cleared.</p>
+
+  <div class="box crit">
+    <div class="h">Remove inherited IP aliases first</div>
+    The 810294 image carried stale aliases (<code>.93/.94/.95/.96</code>) that caused SSH from mgmt to land on the wrong VM. Strip them before or immediately after cloning.
+  </div>
+
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — freshly cloned sim VM</span><span>root</span></div>
+    <pre><span class="c"># 1 — clear inherited address aliases</span>
+<span class="k">nmcli</span> con mod enp0s3 -ipv4.addresses 192.168.2.93/24
+<span class="k">nmcli</span> con mod enp0s3 -ipv4.addresses 192.168.2.94/24
+
+<span class="c"># 2 — set this clone's identity</span>
+<span class="k">nmcli</span> con mod enp0s3 ipv4.addresses 192.168.2.93/24
+<span class="k">hostnamectl</span> set-hostname rocky9-sim-840006
+<span class="k">sed</span> -i <span class="s">'s/^DKCSIM_SERIALNUM=.*/DKCSIM_SERIALNUM=840006/'</span> /root/integsim/settings.txt
+
+<span class="c"># 3 — disable IPv6 dup-address (clones share a MAC seed)</span>
+<span class="k">nmcli</span> con mod enp0s8 ipv6.method disabled
+
+<span class="c"># 4 — re-run integsim setup for the new serial/IP</span>
+<span class="v">EXT_IP</span>=192.168.2.93 /root/integsim/setup.sh
+<span class="k">/root/integsim/start.sh</span></pre>
+  </div>
+
+  <p>On the mgmt node, clear the old host key for any reused IP before reconnecting:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — mgmt node</span><span>root</span></div>
+    <pre><span class="k">ssh-keygen</span> -R 192.168.2.92</pre>
+  </div>
+</section>
+
+<section id="register">
+  <h2 class="sec"><span class="num">08</span> Registering arrays in SAM4H</h2>
+  <p>With all four REST surfaces answering, register each array in the SAM4H UI. SAM4H then runs a detailed CCI reload that populates cache size and microcode in the array list.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Array</th><th>Controller IP 0 / 1</th><th>Raidcom user</th><th>Password</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">810294</td><td class="mono-cell">192.168.2.90</td><td>maintenance</td><td class="mono-cell">raid-maintenance</td></tr>
+        <tr><td class="mono-cell">840006</td><td class="mono-cell">192.168.2.93</td><td>maintenance</td><td class="mono-cell">raid-maintenance</td></tr>
+        <tr><td class="mono-cell">845665</td><td class="mono-cell">192.168.2.92</td><td>maintenance</td><td class="mono-cell">raid-maintenance</td></tr>
+        <tr><td class="mono-cell">845666</td><td class="mono-cell">192.168.2.94</td><td>maintenance</td><td class="mono-cell">raid-maintenance</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box warn">
+    <div class="h">0 Bytes cache after registration?</div>
+    If an array lists 0 Bytes cache and a blank microcode while its CCI column is empty, the OS <code>maintenance</code> password is wrong on that simulator. Reset it (<code>echo 'maintenance:raid-maintenance' | chpasswd</code>), restart integsim, then trigger a detailed reload. A reload that finishes in a few seconds without running the raidcom sequence means HORCM for that instance was not reachable.
+  </div>
+</section>
+
+<section id="ansible">
+  <h2 class="sec"><span class="num">09</span> Ansible project structure</h2>
+  <p>The project lives at <code>/etc/ansible/Ansible_Simulator_Lab</code>. Always <code>cd</code> there before running anything — the inventory and vault paths in <code>ansible.cfg</code> are relative, and running from elsewhere yields "No inventory parsed".</p>
+
+  <figure>
+    <!-- ansible-structure.svg inlined -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 820" font-family="'DejaVu Sans Mono',monospace">
+  <defs>
+    <style>
+      .bg{fill:#020a0f}
+      .eyebrow{fill:#00c8f0;font-size:11px;font-weight:bold;letter-spacing:2px}
+      .sub{fill:#4a7a95;font-size:10px}
+      .panel{fill:#060f16;stroke:#0d3550;stroke-width:1.5}
+      .ph{fill:#00c8f0;font-size:12px;font-weight:bold}
+      .dir{fill:#00c8f0;font-size:12px}
+      .file{fill:#b8d8e8;font-size:12px}
+      .cmt{fill:#4a7a95;font-size:10px;font-style:italic}
+      .grp{fill:#00e8a0;font-size:12px;font-weight:bold}
+      .hst{fill:#b8d8e8;font-size:11px}
+      .gip{fill:#005f75;font-size:10px}
+      .tline{stroke:#0d3550;stroke-width:1}
+      .gline{stroke:#006644;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1100" height="820"/>
+  <text class="eyebrow" x="40" y="42">▸ ANSIBLE PROJECT STRUCTURE &amp; INVENTORY GRAPH</text>
+  <text class="sub" x="40" y="62">/etc/ansible/Ansible_Simulator_Lab — generated by scripts/show-structure.sh</text>
+
+  <!-- LEFT: directory tree -->
+  <rect class="panel" x="30" y="80" width="560" height="710" rx="8"/>
+  <text class="ph" x="48" y="106">DIRECTORY TREE</text>
+
+  <!-- tree lines -->
+  <g font-size="12">
+    <text class="dir" x="48" y="134">Ansible_Simulator_Lab/</text>
+    <text class="file" x="68" y="156">├─ ansible.cfg          <tspan class="cmt">inventory · vault · roles_path</tspan></text>
+    <text class="file" x="68" y="178">├─ .ansible-lint        <tspan class="cmt">excludes vendor playbooks</tspan></text>
+    <text class="file" x="68" y="200">├─ .yamllint.yml</text>
+    <text class="file" x="68" y="222">├─ .gitignore           <tspan class="cmt">exports/</tspan></text>
+    <text class="file" x="68" y="244">├─ inventory            <tspan class="cmt">groups + lab:children</tspan></text>
+    <text class="dir"  x="68" y="266">├─ group_vars/</text>
+    <text class="file" x="92" y="288">│   ├─ controller.yml   <tspan class="cmt">horcm_instances</tspan></text>
+    <text class="file" x="92" y="310">│   └─ vault.yml        <tspan class="cmt">$ANSIBLE_VAULT · vault_arrays</tspan></text>
+    <text class="dir"  x="68" y="332">├─ host_vars/           <tspan class="cmt">per-sim: ip · serial · horcm</tspan></text>
+    <text class="dir"  x="68" y="354">├─ roles/</text>
+    <text class="file" x="92" y="376">│   ├─ cci/             <tspan class="cmt">HORCM config + start</tspan></text>
+    <text class="file" x="92" y="398">│   └─ storage-sim/     <tspan class="cmt">iSCSI · WWN files</tspan></text>
+    <text class="dir"  x="68" y="420">├─ playbooks/</text>
+    <text class="file" x="92" y="442">│   ├─ 01-verify-lab.yml … 07-vsp-facts.yml</text>
+    <text class="file" x="92" y="464">│   ├─ 08-export-facts.yml  <tspan class="cmt">facts → JSON</tspan></text>
+    <text class="dir"  x="92" y="486">│   ├─ vsp_direct/      <tspan class="cmt">60+ vendor examples</tspan></text>
+    <text class="dir"  x="92" y="508">│   └─ ansible_vault_vars/</text>
+    <text class="dir"  x="68" y="530">├─ scripts/</text>
+    <text class="file" x="92" y="552">│   ├─ lint-check.sh         <tspan class="cmt">7 checks</tspan></text>
+    <text class="file" x="92" y="574">│   ├─ show-structure.sh     <tspan class="cmt">this grapher</tspan></text>
+    <text class="file" x="92" y="596">│   ├─ run-facts-export.sh   <tspan class="cmt">pipeline</tspan></text>
+    <text class="file" x="92" y="618">│   ├─ facts_to_xlsx.py      <tspan class="cmt">workbook + diff</tspan></text>
+    <text class="file" x="92" y="640">│   ├─ facts_to_csv.py</text>
+    <text class="file" x="92" y="662">│   └─ gather_hba_wwn.py     <tspan class="cmt">raidcom WWN logins</tspan></text>
+    <text class="dir"  x="68" y="684">├─ exports/             <tspan class="cmt">git-ignored output</tspan></text>
+    <text class="file" x="92" y="706">│   ├─ raw/  csv/  history/</text>
+    <text class="file" x="92" y="728">│   └─ vsp_facts_&lt;date&gt;.xlsx</text>
+    <text class="file" x="68" y="750">└─ collections (~/.ansible)  <tspan class="cmt">vspone_block 4.8.1</tspan></text>
+  </g>
+
+  <!-- RIGHT: inventory graph -->
+  <rect class="panel" x="610" y="80" width="460" height="430" rx="8"/>
+  <text class="ph" x="628" y="106">INVENTORY GRAPH — ansible-inventory --graph</text>
+
+  <!-- @all -->
+  <text class="grp" x="628" y="140">@all:</text>
+  <text class="grp" x="648" y="166">└─@lab:</text>
+
+  <!-- controller -->
+  <text class="grp" x="676" y="196">├─@controller:</text>
+  <text class="hst" x="710" y="218">rocky9-ansible-mgmt</text>
+  <text class="gip" x="710" y="234">(CCI/HORCM host)</text>
+
+  <!-- simulator -->
+  <text class="grp" x="676" y="262">├─@simulator:</text>
+  <text class="hst" x="710" y="284">rocky9-sim-810294 · 840006</text>
+  <text class="hst" x="710" y="302">rocky9-sim-845665 · 845666</text>
+
+  <!-- nodes -->
+  <text class="grp" x="676" y="330">├─@nodes:</text>
+  <text class="hst" x="710" y="352">rhel-dkc-node1 · node2</text>
+
+  <!-- mgmt -->
+  <text class="grp" x="676" y="380">└─@mgmt:</text>
+  <text class="hst" x="710" y="402">rocky9-ansible-mgmt</text>
+
+  <text class="sub" x="628" y="440">vars resolve: group_vars/&lt;group&gt;.yml + host_vars/&lt;host&gt;.yml</text>
+  <text class="sub" x="628" y="458">vault_arrays (vault.yml) drives facts + export loops</text>
+  <text class="sub" x="628" y="476">become: False · remote_user root · key /root/.ssh/ansible</text>
+
+  <!-- facts pipeline panel -->
+  <rect class="panel" x="610" y="530" width="460" height="260" rx="8"/>
+  <text class="ph" x="628" y="556">FACTS-EXPORT PIPELINE</text>
+  <text class="file" x="628" y="584">run-facts-export.sh</text>
+  <text class="cmt" x="628" y="604">  1 ▸ ansible-playbook 08-export-facts.yml</text>
+  <text class="cmt" x="628" y="622">      └ 6 module facts + gather_hba_wwn.py</text>
+  <text class="cmt" x="628" y="640">          → exports/raw/*.json</text>
+  <text class="cmt" x="628" y="660">  2 ▸ facts_to_xlsx.py  (diff vs history)</text>
+  <text class="cmt" x="628" y="678">      → Summary · Changes · per-array</text>
+  <text class="cmt" x="628" y="696">        · All-&lt;fact&gt; · All-HBA-WWNs</text>
+  <text class="cmt" x="628" y="714">  3 ▸ facts_to_csv.py → exports/csv/*.csv</text>
+  <text class="cmt" x="628" y="732">  4 ▸ archive raw → exports/history/&lt;ts&gt;</text>
+  <text class="cmt" x="628" y="750">  5 ▸ copy xlsx+csv → /mnt/vm_share</text>
+  <text class="sub" x="628" y="774">green = added · amber = changed/empty-HG · red = removed</text>
+</svg>
+    <figcaption>FIG 2 · Project tree, inventory graph, and the facts-export pipeline</figcaption>
+  </figure>
+
+  <h3>Inventory groups</h3>
+  <p>Hosts are grouped <code>controller</code>, <code>simulator</code>, <code>nodes</code>, and <code>mgmt</code>, with a <code>lab:children</code> roll-up. Per-host facts (internal IP, bridged IP, array serial, HORCM instance) live in <code>host_vars/</code>; shared data lives in <code>group_vars/</code>.</p>
+
+  <h3>Regenerate the structure view</h3>
+  <p>The <code>show-structure.sh</code> grapher renders the live tree, the inventory graph, the script and collection inventory, and the running HORCM map in one pass:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — project root</span><span>root</span></div>
+    <pre><span class="k">bash</span> scripts/show-structure.sh | tee /mnt/vm_share/lab-structure.txt</pre>
+  </div>
+
+  <h3>Lint before every commit</h3>
+  <p><code>lint-check.sh</code> runs seven gates: yamllint, ansible-lint, syntax-check, inventory graph, vault-is-encrypted, vault-pass-not-tracked, and shellcheck on all scripts.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — project root</span><span>root</span></div>
+    <pre><span class="k">bash</span> scripts/lint-check.sh
+<span class="c"># Results: 7 passed, 0 failed → safe to commit and push</span></pre>
+  </div>
+</section>
+
+<section id="vspone">
+  <h2 class="sec"><span class="num">10</span> vspone_block collection</h2>
+  <p>The <code>hitachivantara.vspone_block</code> 4.8.1 collection provides 102 VSP modules. The vendor ships example playbooks under <code>vsp_direct/</code>, copied into the project for reference and reuse.</p>
+
+  <h3>Vault variables for direct connection</h3>
+  <p>The example playbooks read connection details from a relative path. Create the vars file once:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>playbooks/ansible_vault_vars/ansible_vault_storage_var.yml</span><span>excerpt</span></div>
+    <pre><span class="v">storage_address</span>: <span class="s">192.168.2.90</span>
+<span class="v">vault_storage_username</span>: <span class="s">maintenance</span>
+<span class="v">vault_storage_secret</span>: <span class="s">raid-maintenance</span></pre>
+  </div>
+
+  <h3>Accept the usage consent once</h3>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — project root</span><span>root</span></div>
+    <pre><span class="k">ansible-playbook</span> playbooks/vsp_direct/accept_user_consent.yml</pre>
+  </div>
+
+  <div class="box warn">
+    <div class="h">Vendor playbooks &amp; ansible-lint</div>
+    The 60+ vendor example playbooks carry ~360 upstream <code>name[unique]</code> violations that are not the lab's to fix. The project's <code>.ansible-lint</code> excludes <code>playbooks/vsp_direct/</code> and <code>playbooks/ansible_vault_vars/</code> so the lint gate stays at 7/7 on lab-authored content.
+  </div>
+
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>.ansible-lint — project root</span><span></span></div>
+    <pre><span class="v">profile</span>: <span class="s">moderate</span>
+<span class="v">exclude_paths</span>:
+  - <span class="s">playbooks/vsp_direct/</span>
+  - <span class="s">playbooks/ansible_vault_vars/</span>
+<span class="v">warn_list</span>:
+  - <span class="s">yaml[line-length]</span></pre>
+  </div>
+</section>
+
+<section id="facts">
+  <h2 class="sec"><span class="num">11</span> Facts-export toolchain</h2>
+  <p>The export pipeline gathers six fact types plus HBA WWN logins from every array, then builds a formatted Excel workbook and matching CSVs, with a run-over-run diff. One command runs the whole thing:</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>bash — project root</span><span>root</span></div>
+    <pre><span class="k">bash</span> scripts/run-facts-export.sh</pre>
+  </div>
+
+  <h3>What it produces</h3>
+  <ul>
+    <li><strong>Summary</strong> tab — one row per array (model, microcode, capacity, efficiency, object counts) with a SUM total row.</li>
+    <li><strong>Changes</strong> tab — diff versus the previous run: added (green), changed (amber), removed (red).</li>
+    <li><strong>Per-array</strong> tabs — all six fact types stacked, plus an HBA-WWN section.</li>
+    <li><strong>All-&lt;fact type&gt;</strong> tabs — arrays stacked with a serial column; added rows and changed cells highlighted.</li>
+    <li><strong>All-HBA-WWNs</strong> tab — logins (from raidcom) and registered WWNs (from the module), keyed for migration planning. Empty host groups are flagged.</li>
+    <li><strong>CSV</strong> mirror in <code>exports/csv/</code>, and an auto-copy of everything to <code>/mnt/vm_share</code> (<code>D:\vsp_facts_export</code>).</li>
+  </ul>
+
+  <div class="box info">
+    <div class="h">Migration data: WWN logins &amp; empty host groups</div>
+    On the simulators <code>numberOfHbasPerHostGroup</code> is 0, so the first run correctly shows zero HBA WWNs and every host group flagged empty — the clean migration baseline. As initiators are registered or hosts log in, they populate the All-HBA-WWNs tab and the empty flags clear.
+  </div>
+
+  <p class="note">Outputs are regenerable, so <code>exports/</code> is git-ignored. openpyxl must be installed under <code>python3.11</code> for the workbook step.</p>
+</section>
+
+<section id="startup">
+  <h2 class="sec"><span class="num">12</span> Startup &amp; persistence</h2>
+  <p>A boot-time script brings the lab up in the correct order: network, then SAM4H, then the simulator REST surfaces, then HORCM. The simulator VMs autostart integsim from their own crontab; the mgmt node starts HORCM only after all four REST APIs answer.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>crontab — mgmt node</span><span>root</span></div>
+    <pre><span class="v">@reboot</span> sleep 30 &amp;&amp; /usr/local/bin/lab-startup.sh</pre>
+  </div>
+  <p>The script restarts SAM4H if fewer than four containers are up, waits for the four simulator REST endpoints to return HTTP 200/302, then starts HORCM instances 1001/1004/1005/1006 and verifies each with <code>raidqry</code>. It logs to <code>/var/log/lab-startup.log</code>. Boot to fully-operational is roughly 90 seconds. The full script and its failure modes are documented in the Troubleshooting Guide.</p>
+
+  <div class="box tip">
+    <div class="h">After any change</div>
+    Run <code>scripts/lint-check.sh</code> → commit → push, then snapshot the affected VMs. The mgmt node snapshot name in current use is <code>Rocky9-lab-vspb26-facts-export-may2026</code>. Remember: snapshots can fail together — GitHub is the backup that matters.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara · VSP One B26 Simulator Lab · Installation Guide v4</span>
+  <span>Document 1 of 3 · Rocky Linux 9.7</span>
+</footer>
+
+</div>
+</body>
+</html>

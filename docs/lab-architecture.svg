@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 760" font-family="'DejaVu Sans Mono',monospace">
+  <defs>
+    <style>
+      .bg{fill:#020a0f}
+      .card{fill:#060f16;stroke:#0d3550;stroke-width:1.5;rx:8}
+      .mgmt{stroke:#00c8f0;stroke-width:2}
+      .sim{stroke:#00e8a0;stroke-width:1.5}
+      .node{stroke:#4a7a95;stroke-width:1.5}
+      .host{stroke:#f0c040;stroke-width:1.5}
+      .title{fill:#fff;font-size:15px;font-weight:bold}
+      .sub{fill:#4a7a95;font-size:10px}
+      .ip{fill:#00c8f0;font-size:10px}
+      .ipg{fill:#00e8a0;font-size:10px}
+      .lbl{fill:#b8d8e8;font-size:11px}
+      .role{fill:#b8d8e8;font-size:10px}
+      .net{fill:#005f75;font-size:11px;font-weight:bold}
+      .netg{fill:#006644;font-size:11px;font-weight:bold}
+      .eyebrow{fill:#00c8f0;font-size:11px;font-weight:bold;letter-spacing:2px}
+      .hdr{fill:#f0c040;font-size:10px;font-weight:bold}
+      .line{stroke:#0d3550;stroke-width:1.5}
+      .lineb{stroke:#005f75;stroke-width:2;stroke-dasharray:4 3}
+      .lineg{stroke:#006644;stroke-width:2;stroke-dasharray:4 3}
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1100" height="760"/>
+  <text class="eyebrow" x="40" y="42">▸ HITACHI VSP ONE B26 LAB — ARCHITECTURE</text>
+  <text class="sub" x="40" y="62">VirtualBox on Windows host · Rocky Linux 9.7 · 4 integsim arrays · SAM4H v2.4.3b · CCI 01-88-03/03</text>
+
+  <!-- Windows host outer frame -->
+  <rect class="card host" x="30" y="80" width="1040" height="660" rx="10" fill="#04080c"/>
+  <text class="hdr" x="48" y="104">WINDOWS HOST · VirtualBox · D:\ → /mnt/vm_share</text>
+
+  <!-- Bridged network bar -->
+  <rect x="48" y="120" width="1004" height="26" rx="5" fill="#001820" stroke="#005f75" stroke-width="1.5"/>
+  <text class="net" x="60" y="138">BRIDGED NETWORK · 192.168.2.0/24 · gw 192.168.2.254</text>
+
+  <!-- Internal network bar -->
+  <rect x="48" y="600" width="1004" height="26" rx="5" fill="#001810" stroke="#006644" stroke-width="1.5"/>
+  <text class="netg" x="60" y="618">INTERNAL NETWORK · Ansible-lab · 192.168.56.0/24</text>
+
+  <!-- MGMT NODE -->
+  <rect class="card mgmt" x="60" y="180" width="300" height="180" rx="8"/>
+  <text class="title" x="76" y="206">Rocky9-Ansible-Mgmt</text>
+  <text class="sub" x="76" y="222">Rocky Linux 9.7 · 16GB</text>
+  <text class="role" x="76" y="246">▪ Ansible control (core 2.16.18)</text>
+  <text class="role" x="76" y="264">▪ SAM4H v2.4.3b (podman ×4)</text>
+  <text class="role" x="76" y="282">▪ CCI 01-88-03/03 + HORCM</text>
+  <text class="role" x="76" y="300">▪ HORCM inst 1001/1004/1005/1006</text>
+  <text class="ip" x="76" y="324">bridged 192.168.2.91</text>
+  <text class="ipg" x="76" y="340">internal 192.168.56.11</text>
+
+  <!-- connect mgmt to both nets -->
+  <line class="lineb" x1="210" y1="180" x2="210" y2="146"/>
+  <line class="lineg" x1="300" y1="360" x2="300" y2="600"/>
+
+  <!-- SIM ARRAYS (4) -->
+  <!-- 810294 -->
+  <rect class="card sim" x="400" y="170" width="200" height="120" rx="8"/>
+  <text class="title" x="414" y="194" font-size="13">sim-810294</text>
+  <text class="sub" x="414" y="210">integsim v10.2</text>
+  <text class="role" x="414" y="230">HORCM 1001</text>
+  <text class="ip" x="414" y="250">192.168.2.90</text>
+  <text class="sub" x="414" y="268">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="500" y1="170" x2="500" y2="146"/>
+
+  <!-- 845666 -->
+  <rect class="card sim" x="620" y="170" width="200" height="120" rx="8"/>
+  <text class="title" x="634" y="194" font-size="13">sim-845666</text>
+  <text class="sub" x="634" y="210">integsim v10.2</text>
+  <text class="role" x="634" y="230">HORCM 1004</text>
+  <text class="ip" x="634" y="250">192.168.2.94</text>
+  <text class="sub" x="634" y="268">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="720" y1="170" x2="720" y2="146"/>
+
+  <!-- 840006 -->
+  <rect class="card sim" x="400" y="310" width="200" height="120" rx="8"/>
+  <text class="title" x="414" y="334" font-size="13">sim-840006</text>
+  <text class="sub" x="414" y="350">integsim v10.2</text>
+  <text class="role" x="414" y="370">HORCM 1005</text>
+  <text class="ip" x="414" y="390">192.168.2.93</text>
+  <text class="sub" x="414" y="408">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="500" y1="310" x2="500" y2="146"/>
+
+  <!-- 845665 -->
+  <rect class="card sim" x="620" y="310" width="200" height="120" rx="8"/>
+  <text class="title" x="634" y="334" font-size="13">sim-845665</text>
+  <text class="sub" x="634" y="350">integsim v10.2</text>
+  <text class="role" x="634" y="370">HORCM 1006</text>
+  <text class="ip" x="634" y="390">192.168.2.92</text>
+  <text class="sub" x="634" y="408">cache 278.5G · A3-00-00/00</text>
+  <line class="lineb" x1="720" y1="310" x2="720" y2="146"/>
+
+  <!-- HORCM/IPCMD callout -->
+  <rect x="860" y="180" width="180" height="250" rx="8" fill="#001820" stroke="#00c8f0" stroke-width="1.5"/>
+  <text class="hdr" x="874" y="204" fill="#00c8f0">HORCM ON MGMT ONLY</text>
+  <text class="role" x="874" y="226">HORCM_CMD per array:</text>
+  <text class="sub" x="874" y="244">\\.\IPCMD-&lt;ip&gt;-31001</text>
+  <text class="role" x="874" y="268">HORCM_MON ports:</text>
+  <text class="sub" x="874" y="286">34001 / 34004 /</text>
+  <text class="sub" x="874" y="302">34005 / 34006</text>
+  <text class="role" x="874" y="326">SAM4H auto-assigns</text>
+  <text class="sub" x="874" y="344">instance numbers;</text>
+  <text class="sub" x="874" y="360">re-add re-increments</text>
+  <text class="role" x="874" y="386">REST verify:</text>
+  <text class="sub" x="874" y="404">curl -sk -u maint…</text>
+  <text class="sub" x="874" y="420">/ConfigurationManager</text>
+
+  <!-- DKC NODES -->
+  <rect class="card node" x="400" y="470" width="200" height="110" rx="8"/>
+  <text class="title" x="414" y="494" font-size="13">Rhel-DKC-Node1</text>
+  <text class="sub" x="414" y="510">RHEL 7.9 · 2GB</text>
+  <text class="role" x="414" y="530">storage-host sim</text>
+  <text class="ipg" x="414" y="552">192.168.56.21</text>
+  <line class="lineg" x1="500" y1="580" x2="500" y2="600"/>
+
+  <rect class="card node" x="620" y="470" width="200" height="110" rx="8"/>
+  <text class="title" x="634" y="494" font-size="13">Rhel-DKC-Node2</text>
+  <text class="sub" x="634" y="510">RHEL 7.9 · 2GB</text>
+  <text class="role" x="634" y="530">storage-host sim</text>
+  <text class="ipg" x="634" y="552">192.168.56.22</text>
+  <line class="lineg" x1="720" y1="580" x2="720" y2="600"/>
+
+  <!-- legend -->
+  <text class="sub" x="60" y="670">Legend:</text>
+  <rect x="120" y="660" width="14" height="14" rx="3" fill="none" class="mgmt"/>
+  <text class="lbl" x="140" y="671">mgmt</text>
+  <rect x="200" y="660" width="14" height="14" rx="3" fill="none" class="sim"/>
+  <text class="lbl" x="220" y="671">integsim array</text>
+  <rect x="330" y="660" width="14" height="14" rx="3" fill="none" class="node"/>
+  <text class="lbl" x="350" y="671">storage host</text>
+  <line class="lineb" x1="450" y1="667" x2="480" y2="667"/>
+  <text class="lbl" x="488" y="671">bridged</text>
+  <line class="lineg" x1="560" y1="667" x2="590" y2="667"/>
+  <text class="lbl" x="598" y="671">internal</text>
+
+  <text class="sub" x="60" y="710">SAM4H UI → https://192.168.2.91:8080   ·   Cockpit → https://192.168.2.91:9090   ·   GitHub: docker-hc/Ansible_Simulator_Lab</text>
+</svg>

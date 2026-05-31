@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Troubleshooting Guide — VSP One B26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#020a0f; --bg2:#04101a; --panel:#060f16; --panel2:#081722;
+    --line:#0d3550; --line2:#13405e;
+    --cyan:#00c8f0; --cyan-dim:#0892b0; --green:#00e8a0; --amber:#f0c040;
+    --red:#ff6b6b; --navy:#1F3A5F;
+    --txt:#cfe6f2; --txt-dim:#7fa3b8; --muted:#4a7a95;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(255,107,107,.05), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--amber); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"▸"; color:var(--red)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--amber)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:760px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--cyan); font-weight:700}
+  .chip.amber b{color:var(--amber)}
+  .chip.red b{color:var(--red)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--amber)}
+
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--red); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--amber)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--cyan-dim); flex-shrink:0;}
+
+  section{margin-bottom:60px; scroll-margin-top:24px}
+  h2.sec{font-size:25px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--amber);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px;
+    letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--green); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--cyan); white-space:nowrap;}
+
+  .code{background:#030c12; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#1a3548; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.6; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .code pre .e{color:var(--red)}
+
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0;
+    border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.07); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(0,200,240,.06); border-color:var(--cyan)}
+  .box.info .h{color:var(--cyan)}
+
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--cyan); font-size:12px}
+
+  /* issue card */
+  .issue{border:1px solid var(--line); border-radius:12px; margin:22px 0;
+    overflow:hidden; background:var(--panel);}
+  .issue .ihead{padding:16px 22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px; background:var(--panel2);}
+  .issue .tag{font-family:var(--mono); font-size:11px; font-weight:700;
+    padding:3px 9px; border-radius:5px; letter-spacing:.5px; flex-shrink:0;}
+  .issue .tag.boot{background:rgba(240,192,64,.15); color:var(--amber); border:1px solid var(--amber)}
+  .issue .tag.net{background:rgba(0,200,240,.15); color:var(--cyan); border:1px solid var(--cyan)}
+  .issue .tag.cci{background:rgba(0,232,160,.15); color:var(--green); border:1px solid var(--green)}
+  .issue .tag.crit{background:rgba(255,107,107,.15); color:var(--red); border:1px solid var(--red)}
+  .issue .ihead .t{font-weight:700; color:#fff; font-size:16px}
+  .issue .ibody{padding:18px 22px}
+  .issue .sym{font-family:var(--mono); font-size:12.5px; color:var(--red);
+    background:rgba(255,107,107,.06); border-radius:6px; padding:10px 14px;
+    margin-bottom:14px; border-left:2px solid var(--red); white-space:pre-wrap; word-break:break-word}
+  .issue .ibody .fix-h{font-family:var(--mono); font-size:11px; letter-spacing:1px;
+    color:var(--green); text-transform:uppercase; margin:4px 0 8px}
+
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--amber); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Installation Guide</div>
+    <div class="cur">▸ DOCUMENT 2 of 3</div>
+    <div>Troubleshooting Guide</div>
+    <div>VSP Simulator Guide</div>
+  </div>
+  <div class="eyebrow">HitachiVantara · Storage Automation Lab</div>
+  <h1>Troubleshooting Guide<br><span class="accent">VSP One B26</span> Simulator Lab</h1>
+  <p class="lede">A technical reference for the four-array lab: the operational scripts in full, the setup decisions behind them, and the failure modes — with diagnosis and fix — observed building and running the environment.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip">Rocky Linux <b>9.7</b></span>
+    <span class="chip amber">22 <b>issues</b></span>
+    <span class="chip">4 <b>scripts</b></span>
+    <span class="chip red">HORCM <b>IPCMD</b></span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#scripts">The operational scripts</a></li>
+    <li><a href="#lint">lint-check.sh — the 7 gates</a></li>
+    <li><a href="#startup">lab-startup.sh — boot order</a></li>
+    <li><a href="#structure">show-structure.sh — grapher</a></li>
+    <li><a href="#facts-pipe">Facts-export pipeline</a></li>
+    <li><a href="#i-host">Host &amp; OS issues</a></li>
+    <li><a href="#i-net">Network &amp; SSH issues</a></li>
+    <li><a href="#i-integsim">integsim issues</a></li>
+    <li><a href="#i-horcm">HORCM &amp; CCI issues</a></li>
+    <li><a href="#i-sam4h">SAM4H issues</a></li>
+    <li><a href="#i-ansible">Ansible &amp; lint issues</a></li>
+    <li><a href="#i-facts">Facts-export issues</a></li>
+  </ol>
+</nav>
+
+<section id="scripts">
+  <h2 class="sec"><span class="num">01</span> The operational scripts</h2>
+  <p>Four scripts run the lab day to day. They live in <code>scripts/</code> under the project root, and every one of them is checked by <code>lint-check.sh</code> (shellcheck for shell, AST parse for Python) before commit. This section reproduces each in full and explains the parts that matter when something breaks. All scripts assume you have <code>cd</code>'d to <code>/etc/ansible/Ansible_Simulator_Lab</code> first, or they resolve the project root themselves via <code>cd "$(dirname "$0")/.."</code>.</p>
+  <div class="box info">
+    <div class="h">Interpreter discipline</div>
+    Shell scripts call <code>python3.11</code> explicitly, never bare <code>python3</code>. System Python on Rocky 9 is 3.9 and lacks the lab's <code>openpyxl</code> / <code>ansible-core</code> install. A "ModuleNotFoundError: openpyxl" almost always means a script was edited to call <code>python3</code> instead of <code>python3.11</code>.
+  </div>
+</section>
+
+<section id="lint">
+  <h2 class="sec"><span class="num">02</span> lint-check.sh — the 7 gates</h2>
+  <p>The pre-commit gate. Seven independent checks, each printed pass/fail, with a non-zero exit if any fail. The vault checks are safety rails: they confirm the vault is actually encrypted and that the vault password file is never tracked by Git.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>scripts/lint-check.sh</span><span>bash</span></div>
+    <pre><span class="c">#!/bin/bash</span>
+<span class="c"># Lab lint &amp; verification — 7 gates, non-zero exit on any failure.</span>
+<span class="k">cd</span> <span class="s">"$(dirname "$0")/.."</span>
+pass=0; fail=0
+<span class="k">ok</span>(){ <span class="k">echo</span> <span class="s">"✓ $1 passed"</span>; pass=$((pass+1)); }
+<span class="k">no</span>(){ <span class="k">echo</span> <span class="s">"✗ $1 FAILED"</span>;  fail=$((fail+1)); }
+
+<span class="c"># 1 — yamllint</span>
+<span class="k">yamllint</span> . &amp;&amp; ok <span class="s">"yamllint"</span> || no <span class="s">"yamllint"</span>
+<span class="c"># 2 — ansible-lint (honours .ansible-lint excludes)</span>
+<span class="k">ansible-lint</span> &amp;&amp; ok <span class="s">"ansible-lint"</span> || no <span class="s">"ansible-lint"</span>
+<span class="c"># 3 — syntax check every playbook</span>
+<span class="k">ansible-playbook</span> --syntax-check playbooks/*.yml &amp;&amp; ok <span class="s">"syntax"</span> || no <span class="s">"syntax"</span>
+<span class="c"># 4 — inventory parses into a graph</span>
+<span class="k">ansible-inventory</span> --graph >/dev/null &amp;&amp; ok <span class="s">"inventory"</span> || no <span class="s">"inventory"</span>
+<span class="c"># 5 — vault is actually encrypted</span>
+<span class="k">head</span> -1 group_vars/vault.yml | grep -q <span class="s">'\$ANSIBLE_VAULT'</span> \
+  &amp;&amp; ok <span class="s">"vault encrypted"</span> || no <span class="s">"vault encrypted"</span>
+<span class="c"># 6 — vault password file not tracked by git</span>
+<span class="k">git</span> ls-files --error-unmatch .vault_pass 2>/dev/null \
+  &amp;&amp; no <span class="s">"vault_pass tracked"</span> || ok <span class="s">"vault_pass not tracked"</span>
+<span class="c"># 7 — shellcheck every script</span>
+<span class="k">shellcheck</span> scripts/*.sh &amp;&amp; ok <span class="s">"shellcheck"</span> || no <span class="s">"shellcheck"</span>
+
+<span class="k">echo</span> <span class="s">"Results: $pass passed, $fail failed"</span>
+[ <span class="s">"$fail"</span> -eq 0 ] || exit 1</pre>
+  </div>
+  <div class="box warn">
+    <div class="h">Gate 2 fails with ~360 violations?</div>
+    If ansible-lint reports hundreds of <code>name[unique]</code> errors, the <code>.ansible-lint</code> exclude file is missing or not at the project root. The vendor <code>vsp_direct/</code> playbooks carry those upstream violations. See issue <strong>A-2</strong> for the exact exclude file.
+  </div>
+</section>
+
+<section id="startup">
+  <h2 class="sec"><span class="num">03</span> lab-startup.sh — boot order</h2>
+  <p>Run at boot from the mgmt node crontab (<code>@reboot sleep 30 &amp;&amp; /usr/local/bin/lab-startup.sh</code>). The ordering is deliberate: SAM4H first, then wait for every simulator's REST surface, then start HORCM. HORCM started before integsim is ready will connect to nothing.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>/usr/local/bin/lab-startup.sh</span><span>bash</span></div>
+    <pre><span class="c">#!/bin/bash</span>
+<span class="c"># Arrays: 810294→1001, 840006→1005, 845665→1006, 845666→1004</span>
+LOG=/var/log/lab-startup.log
+<span class="k">echo</span> <span class="s">"$(date) — Lab startup initiated"</span> | tee -a $LOG
+
+<span class="c"># 1 — let the network settle</span>
+<span class="k">sleep</span> 20
+
+<span class="c"># 2 — SAM4H: restart if fewer than 4 containers up</span>
+RUNNING=$(podman ps --format <span class="s">"{{.Names}}"</span> | grep -c config-)
+<span class="k">if</span> [ <span class="s">"$RUNNING"</span> -lt 4 ]; <span class="k">then</span>
+  <span class="k">systemctl</span> restart sam4h.service
+  <span class="k">for</span> a <span class="k">in</span> $(seq 1 18); <span class="k">do</span>
+    <span class="k">sleep</span> 10
+    [ $(podman ps --format <span class="s">"{{.Names}}"</span> | grep -c config-) -eq 4 ] &amp;&amp; break
+  <span class="k">done</span>
+<span class="k">fi</span>
+
+<span class="c"># 3 — wait for each simulator REST API (HTTP 200/302)</span>
+<span class="k">for</span> ip <span class="k">in</span> 192.168.2.90 192.168.2.92 192.168.2.93 192.168.2.94; <span class="k">do</span>
+  <span class="k">for</span> a <span class="k">in</span> $(seq 1 30); <span class="k">do</span>
+    code=$(curl -sk -o /dev/null -w <span class="s">"%{http_code}"</span> https://$ip)
+    [ <span class="s">"$code"</span> = <span class="s">"200"</span> ] || [ <span class="s">"$code"</span> = <span class="s">"302"</span> ] &amp;&amp; break
+    <span class="k">sleep</span> 2
+  <span class="k">done</span>
+  <span class="k">echo</span> <span class="s">"$ip → HTTP $code"</span> | tee -a $LOG
+<span class="k">done</span>
+
+<span class="c"># 4 — start HORCM and verify</span>
+<span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span>
+  <span class="k">/HORCM/usr/bin/horcmshutdown.sh</span> $i &amp;>/dev/null
+  <span class="k">/HORCM/usr/bin/horcmstart.sh</span> $i
+<span class="k">done</span>
+<span class="k">sleep</span> 5
+<span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span>
+  <span class="k">raidqry</span> -l -IH${i} | grep -vE <span class="s">'^No|^$|^Group'</span> | head -1 | tee -a $LOG
+<span class="k">done</span>
+<span class="k">echo</span> <span class="s">"$(date) — Lab startup complete"</span> | tee -a $LOG</pre>
+  </div>
+  <p class="note">The simulator VMs autostart integsim from their own crontab (<code>@reboot /root/integsim/start.sh</code>), so by the time the mgmt node reaches step 3 they are usually mid-boot. The 30-attempt / 2-second loop tolerates a slow simulator without hanging the whole sequence.</p>
+</section>
+
+<section id="structure">
+  <h2 class="sec"><span class="num">04</span> show-structure.sh — grapher</h2>
+  <p>A read-only diagnostic. It prints the project tree, the parsed inventory graph, the playbook/role/script inventory, the installed collections, and — crucially when debugging — the live HORCM-to-array map. Pipe it to the share for an offline snapshot.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>scripts/show-structure.sh — key sections</span><span>bash</span></div>
+    <pre><span class="k">cd</span> <span class="s">"$(dirname "$0")/.."</span>
+
+<span class="c"># directory tree (falls back to find if 'tree' absent)</span>
+<span class="k">tree</span> -L 3 -F --dirsfirst -I <span class="s">'exports|.git|__pycache__'</span>
+
+<span class="c"># parsed inventory — groups, children, hosts</span>
+<span class="k">ansible-inventory</span> --graph
+
+<span class="c"># installed collections of interest</span>
+<span class="k">ansible-galaxy</span> collection list \
+  | grep -E <span class="s">'hitachivantara|ansible.posix|brocade'</span>
+
+<span class="c"># LIVE array map — the money shot when CCI misbehaves</span>
+<span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span>
+  line=$(raidqry -l -IH${i} 2>/dev/null | grep -vE <span class="s">'^No|^$|^Group'</span> | head -1)
+  [ -n <span class="s">"$line"</span> ] &amp;&amp; <span class="k">echo</span> <span class="s">"  HORCM $i:$line"</span> \
+                 || <span class="k">echo</span> <span class="s">"  HORCM $i: (not running)"</span>
+<span class="k">done</span></pre>
+  </div>
+  <div class="box tip">
+    <div class="h">First diagnostic for "array shows wrong data"</div>
+    Run this script. If the HORCM map shows an instance bound to the wrong serial, the array's HORCM config file points at the wrong IP, or SAM4H re-assigned the instance number out from under you (issue <strong>H-3</strong>).
+  </div>
+</section>
+
+<section id="facts-pipe">
+  <h2 class="sec"><span class="num">05</span> Facts-export pipeline</h2>
+  <p>Five stages, orchestrated by <code>run-facts-export.sh</code>: gather → workbook → CSV → archive → copy. The gather stage runs the Ansible playbook (six module fact types) and the raidcom WWN collector; the workbook stage diffs against the previous run.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>scripts/run-facts-export.sh</span><span>bash</span></div>
+    <pre><span class="k">cd</span> <span class="s">"$(dirname "$0")/.."</span>
+SHARE_DIR=/mnt/vm_share/vsp_facts_export
+STAMP=$(date +%Y-%m-%d_%H%M%S)
+PREV_ARG=<span class="s">""</span>
+[ <span class="s">"${1:-}"</span> = <span class="s">"--baseline"</span> ] &amp;&amp; [ -n <span class="s">"${2:-}"</span> ] &amp;&amp; PREV_ARG=<span class="s">"--prev $2"</span>
+
+<span class="c"># 1 — gather (6 module facts + raidcom HBA WWN logins)</span>
+<span class="k">ansible-playbook</span> playbooks/08-export-facts.yml
+<span class="c"># 2 — workbook with diff vs previous run</span>
+<span class="k">python3.11</span> scripts/facts_to_xlsx.py --raw exports/raw $PREV_ARG
+<span class="c"># 3 — CSV mirror</span>
+<span class="k">python3.11</span> scripts/facts_to_csv.py --raw exports/raw --out exports/csv
+<span class="c"># 4 — archive this run; keep last 20</span>
+<span class="k">mkdir</span> -p <span class="s">"exports/history/$STAMP"</span>
+<span class="k">cp</span> -f exports/raw/*.json <span class="s">"exports/history/$STAMP/"</span>
+<span class="k">ls</span> -1dt exports/history/*/ | tail -n +21 | xargs -r rm -rf
+<span class="c"># 5 — copy to the Windows share (guarded)</span>
+<span class="k">if</span> [ -d /mnt/vm_share ]; <span class="k">then</span>
+  <span class="k">mkdir</span> -p <span class="s">"$SHARE_DIR/csv"</span>
+  <span class="k">cp</span> -f exports/*.xlsx <span class="s">"$SHARE_DIR/"</span>
+  <span class="k">cp</span> -f exports/csv/*.csv <span class="s">"$SHARE_DIR/csv/"</span>
+<span class="k">fi</span></pre>
+  </div>
+
+  <h3>The HBA-WWN collector</h3>
+  <p>WWN logins are not exposed cleanly by the module set on the simulators, so they are collected directly with raidcom — proven to work over the IPCMD HORCM instances. The collector walks ports → host groups → HBA WWNs per array and writes JSON in the same shape the modules produce, so the workbook builder treats both identically.</p>
+  <div class="code">
+    <div class="bar"><span><span class="dot"></span>scripts/gather_hba_wwn.py — core loop</span><span>python</span></div>
+    <pre><span class="k">def</span> gather_array(serial, inst, user, pw):
+    ih = <span class="s">f"-IH{inst}"</span>; login = [<span class="s">"-login"</span>, user, pw]
+    records = []
+    <span class="k">for</span> port <span class="k">in</span> parse_ports(run([<span class="s">"raidcom"</span>,<span class="s">"get"</span>,<span class="s">"port"</span>,ih]+login)):
+        <span class="k">for</span> gid, gname <span class="k">in</span> parse_host_grp(
+                run([<span class="s">"raidcom"</span>,<span class="s">"get"</span>,<span class="s">"host_grp"</span>,<span class="s">"-port"</span>,port,ih]+login)):
+            <span class="k">for</span> wwn, nick <span class="k">in</span> parse_hba_wwn(
+                    run([<span class="s">"raidcom"</span>,<span class="s">"get"</span>,<span class="s">"hba_wwn"</span>,
+                         <span class="s">"-port"</span>,<span class="s">f"{port}-{gid}"</span>,ih]+login)):
+                records.append({<span class="s">"port_id"</span>:port,<span class="s">"host_group_number"</span>:gid,
+                    <span class="s">"host_group_name"</span>:gname,<span class="s">"hba_wwn"</span>:wwn,
+                    <span class="s">"nickname"</span>:nick,<span class="s">"source"</span>:<span class="s">"login"</span>})
+    <span class="k">return</span> records</pre>
+  </div>
+
+  <h3>How the diff is keyed</h3>
+  <p>The workbook builder classifies each object as added / removed / changed by matching a natural identity field between runs. If a fact type appears entirely as "added" then "removed" instead of "changed", the wrong key is being used — adjust <code>KEY_FIELDS</code> in <code>facts_to_xlsx.py</code>.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Fact type</th><th>Identity key</th></tr></thead>
+      <tbody>
+        <tr><td>Storage system</td><td class="mono-cell">serial_number</td></tr>
+        <tr><td>Parity groups</td><td class="mono-cell">parity_group_id</td></tr>
+        <tr><td>Ports</td><td class="mono-cell">port_id</td></tr>
+        <tr><td>Pools</td><td class="mono-cell">pool_id / id / pool_name</td></tr>
+        <tr><td>LDEVs</td><td class="mono-cell">ldev_id / id</td></tr>
+        <tr><td>Host groups</td><td class="mono-cell">port_id + host_group_number</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Empty host group flag</div>
+    Each host group row gets an <code>hba_count</code> (distinct WWNs, counting a login and its registered twin once) and an <code>empty</code> flag. Empty groups are highlighted amber on the host-group tabs — the migration signal for "placeholder present, no initiators".
+  </div>
+</section>
+
+<section id="i-host">
+  <h2 class="sec"><span class="num">06</span> Host &amp; OS issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">OS-1</span><span class="t">RHEL 10 will not boot on the host</span></div>
+    <div class="ibody">
+      <div class="sym">kernel panic / immediate halt on a pre-2019 Intel CPU</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>RHEL 10 requires the <code>x86-64-v3</code> microarchitecture level. The host i7-8550U (Kaby Lake) is <code>x86-64-v2</code> only. Use <strong>Rocky Linux 9.7</strong> for every VM. This is non-negotiable on this hardware.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">OS-2</span><span class="t">Console flooded with kernel messages</span></div>
+    <div class="ibody">
+      <div class="sym">continuous dmesg/IPv6 output makes the console unusable</div>
+      <div class="fix-h">Fix</div>
+      <div class="code"><div class="bar"><span><span class="dot"></span>all nodes</span><span>root</span></div>
+      <pre><span class="k">grubby</span> --update-kernel=ALL --args=<span class="s">"quiet loglevel=3"</span>
+<span class="k">grub2-mkconfig</span> -o /boot/grub2/grub.cfg</pre></div>
+      <p class="note">On the simulators, IPv6 duplicate-address warnings come from the shared clone MAC seed. Disable IPv6 on the internal NIC: <code>nmcli con mod enp0s8 ipv6.method disabled</code>.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">OS-3</span><span class="t">ansible-core install caps at 2.15</span></div>
+    <div class="ibody">
+      <div class="sym">pip installs ansible-core 2.15.13 instead of 2.16.x</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>System Python 3.9 caps ansible-core at 2.15.13. Install the stack under 3.11: <code>python3.11 -m pip install ansible-core==2.16.18 ansible-lint yamllint openpyxl</code>. Confirm with <code>ansible --version</code> showing the 3.11 interpreter path.</p>
+    </div>
+  </div>
+</section>
+
+<section id="i-net">
+  <h2 class="sec"><span class="num">07</span> Network &amp; SSH issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">NET-1</span><span class="t">SSH to a clone resets the connection</span></div>
+    <div class="ibody">
+      <div class="sym">kex_exchange_identification: Connection reset by peer</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>A clean Rocky 9 clone uses the DEFAULT crypto policy, which the mgmt node's newer OpenSSL rejects. Diagnostic: <code>ssh -o KexAlgorithms=ecdh-sha2-nistp256 …</code> succeeds where plain ssh fails. On the simulator:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+      <pre><span class="k">update-crypto-policies</span> --set LEGACY
+<span class="k">systemctl</span> restart sshd</pre></div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">NET-2</span><span class="t">SSH lands on the wrong simulator</span></div>
+    <div class="ibody">
+      <div class="sym">connecting to 192.168.2.93 reaches the 810294 array</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The clone inherited the source VM's IP aliases (810294 carried <code>.93/.94/.95/.96</code>). Strip them, then set the clone's own address:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+      <pre><span class="k">nmcli</span> con mod enp0s3 -ipv4.addresses 192.168.2.93/24
+<span class="k">nmcli</span> con mod enp0s3 ipv4.addresses 192.168.2.93/24</pre></div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">NET-3</span><span class="t">Host key mismatch on a reused IP</span></div>
+    <div class="ibody">
+      <div class="sym">WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED</div>
+      <div class="fix-h">Fix</div>
+      <p>A reused address (e.g. 192.168.2.92 from a retired template) carries an old host key. Clear it on the mgmt node: <code>ssh-keygen -R 192.168.2.92</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="i-integsim">
+  <h2 class="sec"><span class="num">08</span> integsim issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">SIM-1</span><span class="t">nginx fails — libcrypt.so.1 missing</span></div>
+    <div class="ibody">
+      <div class="sym">error while loading shared libraries: libcrypt.so.1</div>
+      <div class="fix-h">Fix</div>
+      <p>integsim's bundled nginx links the old libcrypt. Install the compat shim: <code>dnf install -y libxcrypt-compat</code>, then re-run <code>start.sh</code>.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">SIM-2</span><span class="t">Generated array has the wrong personality</span></div>
+    <div class="ibody">
+      <div class="sym">setup produces a default config, not the VSP One B26 profile</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The generator wasn't pointed at <code>customed_config.json</code>. Patch the setup script before first run:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+      <pre><span class="k">sed</span> -i <span class="s">'s/JSONGEN_FILENAME=.*/JSONGEN_FILENAME=customed_config.json/'</span> \
+    /root/integsim/src/dkc-simulator/setup-dkc-simulator.sh</pre></div>
+      <p class="note">The config file path is <code>/root/integsim/src/dkc-simulator/resource/generator/customed_config.json</code>. Full detail in Document 3.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">SIM-3</span><span class="t">REST API not answering after boot</span></div>
+    <div class="ibody">
+      <div class="sym">curl to https://&lt;ip&gt; times out for ~30–60s after VM start</div>
+      <div class="fix-h">Expected behaviour</div>
+      <p>integsim takes 30–60 seconds to bring up its REST surface after boot. The startup script's HTTP 200/302 wait loop accounts for this. If it never answers, check <code>start.sh</code> ran (crontab <code>@reboot</code>) and that libxcrypt-compat is installed (SIM-1).</p>
+    </div>
+  </div>
+</section>
+
+<section id="i-horcm">
+  <h2 class="sec"><span class="num">09</span> HORCM &amp; CCI issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">H-1</span><span class="t">HORCM_CMD syntax — the IPCMD form</span></div>
+    <div class="ibody">
+      <div class="sym">raidqry/raidcom cannot reach the array; EX_ENORMP or no response</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>integsim arrays require the special command-device URL, <strong>not</strong> a real device path and <strong>not</strong> a plain IP:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>/etc/horcm1001.conf</span><span></span></div>
+      <pre><span class="v">HORCM_CMD</span>
+\\.\IPCMD-192.168.2.90-31001</pre></div>
+      <p class="note">The <code>31001</code> is integsim's IPCMD listener port on the array side — always 31001 regardless of the instance's MON port.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">H-2</span><span class="t">HORCM won't run on a simulator VM</span></div>
+    <div class="ibody">
+      <div class="sym">port already in use when starting HORCM on a sim</div>
+      <div class="fix-h">Design constraint</div>
+      <p>HORCM runs on the <strong>mgmt node only</strong>. The simulator VMs already bind 31001 for integsim's IPCMD listener, so HORCM cannot also use it there. All instances live on mgmt with MON ports 34001–34006 to avoid collision.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">H-3</span><span class="t">SAM4H re-assigned the HORCM instance number</span></div>
+    <div class="ibody">
+      <div class="sym">an array that was instance 1002 is now 1005 after a re-add</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>SAM4H auto-assigns instance numbers and <strong>re-increments on every delete/re-add</strong>. During this build, 840006 moved 1002→1005 and 845665 moved 1003→1006 when re-added to fix a 0-Bytes cache. The fix is to follow the change through three places:</p>
+      <ul>
+        <li>Create the new HORCM config (<code>/etc/horcm1005.conf</code>, <code>1006</code>) with the right MON port and IPCMD line; remove the stale <code>1002/1003</code> files.</li>
+        <li>Update <code>group_vars/vault.yml</code> <code>horcm_instance</code> for those serials.</li>
+        <li>Update the instance list in <code>lab-startup.sh</code>.</li>
+      </ul>
+      <p><strong>Prevention:</strong> edit the existing array record in SAM4H rather than delete-and-re-add.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag cci">H-4</span><span class="t">raidcom auth fails — OS user</span></div>
+    <div class="ibody">
+      <div class="sym">login rejected for maintenance / raid-maintenance</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The credential is OS-authenticated (<code>extAuthFlg=1</code>). The OS user <code>maintenance</code> (uid 1000) must exist on the simulator with that exact password:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>sim VM</span><span>root</span></div>
+      <pre><span class="k">echo</span> <span class="s">'maintenance:raid-maintenance'</span> | chpasswd</pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="i-sam4h">
+  <h2 class="sec"><span class="num">10</span> SAM4H issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">SAM-1</span><span class="t">Array shows 0 Bytes cache, blank microcode</span></div>
+    <div class="ibody">
+      <div class="sym">CCI column empty; detailed reload finishes in seconds with no raidcom run</div>
+      <div class="fix-h">Diagnosis &amp; fix</div>
+      <p>Observed on 840006 and 845665. A reload that completes in a few seconds never ran the raidcom sequence — SAM4H couldn't authenticate CCI for that array. Root cause was the OS <code>maintenance</code> password (H-4). Sequence that resolved it:</p>
+      <ol>
+        <li>Reset the OS password on the simulator (H-4) and restart integsim.</li>
+        <li>Confirm the REST surface answers and HORCM for that instance reports the serial via <code>raidqry</code>.</li>
+        <li>Re-add the array (note: new instance number — H-3) and trigger a detailed reload.</li>
+      </ol>
+      <p class="note">A healthy reload runs the full raidcom sequence (system, port, pool, parity_grp, host_grp, hba_wwn …) and takes a minute or more. The result: cache 278.5 GiB, microcode A3-00-00/00.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">SAM-2</span><span class="t">UI returns HTTP 500 after boot</span></div>
+    <div class="ibody">
+      <div class="sym">SAM4H UI unreachable / 500 shortly after a reboot</div>
+      <div class="fix-h">Fix</div>
+      <p>A first-boot race in <code>aardvark-dns</code>. Restart once the containers settle:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+      <pre><span class="k">systemctl</span> restart sam4h.service
+<span class="k">sleep</span> 30; podman ps --format <span class="s">"{{.Names}} {{.Status}}"</span></pre></div>
+      <p class="note">The startup script handles this automatically (step 2): it restarts SAM4H if fewer than four containers are running.</p>
+    </div>
+  </div>
+</section>
+
+<section id="i-ansible">
+  <h2 class="sec"><span class="num">11</span> Ansible &amp; lint issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">A-1</span><span class="t">"No inventory parsed"</span></div>
+    <div class="ibody">
+      <div class="sym">ansible commands report no inventory / no hosts matched</div>
+      <div class="fix-h">Fix</div>
+      <p>The inventory and vault paths in <code>ansible.cfg</code> are relative. Always run from the project root: <code>cd /etc/ansible/Ansible_Simulator_Lab</code> first.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">A-2</span><span class="t">ansible-lint: ~360 name[unique] violations</span></div>
+    <div class="ibody">
+      <div class="sym">lint gate 2 fails with hundreds of errors in vsp_direct/</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The vendor example playbooks carry upstream violations that aren't the lab's to fix. The <code>.ansible-lint</code> at the project root excludes them so the gate reflects lab-authored content only:</p>
+      <div class="code"><div class="bar"><span><span class="dot"></span>.ansible-lint</span><span></span></div>
+      <pre><span class="v">profile</span>: <span class="s">moderate</span>
+<span class="v">exclude_paths</span>:
+  - <span class="s">playbooks/vsp_direct/</span>
+  - <span class="s">playbooks/ansible_vault_vars/</span>
+<span class="v">warn_list</span>:
+  - <span class="s">yaml[line-length]</span></pre></div>
+      <p class="note">With the exclude in place the gate returns to 7/7.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag cci">A-3</span><span class="t">Hitachi usage-consent notice on every play</span></div>
+    <div class="ibody">
+      <div class="sym">user_consent_required appears in module output</div>
+      <div class="fix-h">Fix</div>
+      <p>Accept once: <code>ansible-playbook playbooks/vsp_direct/accept_user_consent.yml</code>. The facts-export scripts also defensively strip the <code>user_consent_required</code> key when locating the data payload, so the workbook is unaffected either way.</p>
+    </div>
+  </div>
+</section>
+
+<section id="i-facts">
+  <h2 class="sec"><span class="num">12</span> Facts-export issues</h2>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag crit">F-1</span><span class="t">ModuleNotFoundError: openpyxl</span></div>
+    <div class="ibody">
+      <div class="sym">workbook stage aborts importing openpyxl</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>openpyxl was installed under 3.11 but a script called bare <code>python3</code> (3.9). Install under 3.11 — <code>python3.11 -m pip install openpyxl</code> — and confirm the scripts call <code>python3.11</code>. The system <code>pip3</code> on Rocky 9 also lacks <code>--break-system-packages</code>, another sign you're on the wrong interpreter.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">F-2</span><span class="t">Everything shows as added/removed, never changed</span></div>
+    <div class="ibody">
+      <div class="sym">the Changes tab lists whole fact types as ADDED + REMOVED</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The diff key doesn't match that fact type's real identity field, so no rows line up between runs. Inspect one row's keys on the relevant <code>All-</code> tab and adjust <code>KEY_FIELDS</code> in <code>facts_to_xlsx.py</code> (see §05 table). Pools and host groups are the usual suspects on differing microcode.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag cci">F-3</span><span class="t">All-HBA-WWNs tab is empty</span></div>
+    <div class="ibody">
+      <div class="sym">"No HBA WWNs found — all host groups empty"</div>
+      <div class="fix-h">Expected on a fresh simulator</div>
+      <p>The simulators set <code>numberOfHbasPerHostGroup: 0</code>, so there are no initiators to report — this is the correct migration baseline, not a fault. Populate host groups (Document 3) and the tab fills; the empty flags on the host-group tabs clear as counts go above zero.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">F-4</span><span class="t">Share copy skipped</span></div>
+    <div class="ibody">
+      <div class="sym">"/mnt/vm_share not available — skipped copy"</div>
+      <div class="fix-h">Fix</div>
+      <p>The VirtualBox shared folder isn't mounted. The script guards this and leaves outputs in <code>exports/</code>. Re-mount the share (or check the Guest Additions build — kernel headers via <code>kernel-devel-$(uname -r)</code>) and re-run, or copy from <code>exports/</code> manually.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara · VSP One B26 Simulator Lab · Troubleshooting Guide v4</span>
+  <span>Document 2 of 3 · Rocky Linux 9.7</span>
+</footer>
+
+</div>
+</body>
+</html>

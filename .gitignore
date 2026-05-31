@@ -1,2 +1,5 @@
 .vault_pass
 exports/
+wg0.conf
+*.key
+duckdns/

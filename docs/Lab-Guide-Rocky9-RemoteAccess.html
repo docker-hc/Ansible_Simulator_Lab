@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Remote Access — WireGuard VPN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0805; --bg2:#160e06; --panel:#14100a; --panel2:#1f1810;
+    --line:#3a2c14; --line2:#52401e;
+    --orange:#ff9d4d; --orange-dim:#c2762f; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#3a2c14;
+    --txt:#ecdfc8; --txt-dim:#b8a484; --muted:#8a7a5e;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(255,157,77,.08), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--orange); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--orange)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:780px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--orange); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.red b{color:var(--red)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--orange)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--orange)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--orange-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--orange);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--orange); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--orange); white-space:nowrap;}
+  .code{background:#0a0603; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#3a2c14; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(255,157,77,.08); border-color:var(--orange)}
+  .box.info .h{color:var(--orange)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--orange); font-size:12px}
+  figure{margin:26px 0; border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; background:#0d0805}
+  figure svg{display:block; width:100%; height:auto}
+  figcaption{font-family:var(--mono); font-size:11px; color:var(--muted);
+    padding:10px 16px; border-top:1px solid var(--line); letter-spacing:.5px}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--orange); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--orange); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Installation &middot; Troubleshooting</div>
+    <div>Simulator &middot; Production</div>
+    <div>Multi-Model</div>
+    <div class="cur">&#9656; DOCUMENT 6</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>Remote Access<br><span class="accent">WireGuard</span> VPN to the lab</h1>
+  <p class="lede">Reaching the full lab from any location &mdash; SSH to the management node and browser access to SAM4H, Cockpit, and every array UI &mdash; over a self-hosted WireGuard tunnel, while sidestepping the overlapping-subnet problem that breaks remote access to a 192.168.2.x network.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip cyan">self-hosted <b>WireGuard</b></span>
+    <span class="chip">gateway = <b>mgmt node</b></span>
+    <span class="chip red">1 UDP port <b>exposed</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#topo">Topology</a></li>
+    <li><a href="#subnet">The subnet-conflict problem</a></li>
+    <li><a href="#router">Router port-forward</a></li>
+    <li><a href="#keys">Install &amp; keys</a></li>
+    <li><a href="#forward">IP forwarding</a></li>
+    <li><a href="#server">Server config</a></li>
+    <li><a href="#firewall">Firewall</a></li>
+    <li><a href="#client">Client config</a></li>
+    <li><a href="#verify">Verify &amp; add devices</a></li>
+    <li><a href="#kpn">Real-world deploy: KPN + DuckDNS</a></li>
+    <li><a href="#journey">Troubleshooting journey</a></li>
+    <li><a href="#security">Security posture</a></li>
+  </ol>
+</nav>
+
+<section id="topo">
+  <h2 class="sec"><span class="num">01</span> Topology</h2>
+  <p>WireGuard runs on the management node, which becomes the single VPN gateway into the lab. A remote device tunnels in, and the mgmt node routes its traffic onto the whole 192.168.2.0/24 &mdash; so you get both levels of reach: SSH to operate the lab, and browser access to SAM4H, Cockpit, and each array's REST UI. Your home router forwards one UDP port to the mgmt node; nothing else is exposed.</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" font-family="'DejaVu Sans Mono',monospace">
+  <defs>
+    <style>
+      .bg{fill:#0d0805}
+      .card{fill:#14100a;stroke:#3a2c14;stroke-width:1.5}
+      .remote{stroke:#ff9d4d;stroke-width:2}
+      .inet{stroke:#5e8a73;stroke-width:1.5}
+      .router{stroke:#f0c040;stroke-width:1.5}
+      .mgmt{stroke:#ff9d4d;stroke-width:2}
+      .lab{stroke:#00c8f0;stroke-width:1.5}
+      .title{fill:#fff;font-size:14px;font-weight:bold}
+      .sub{fill:#8a7a5e;font-size:10px}
+      .ip{fill:#ff9d4d;font-size:10px}
+      .ipc{fill:#00c8f0;font-size:10px}
+      .lbl{fill:#d8c8a8;font-size:10px}
+      .eyebrow{fill:#ff9d4d;font-size:11px;font-weight:bold;letter-spacing:2px}
+      .tun{stroke:#ff9d4d;stroke-width:2.5;stroke-dasharray:7 4;fill:none}
+      .wire{stroke:#3a2c14;stroke-width:1.5;fill:none}
+      .tunlbl{fill:#ff9d4d;font-size:10px;font-weight:bold}
+      .pill{fill:#1a1308;stroke:#ff9d4d;stroke-width:1}
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1100" height="560"/>
+  <text class="eyebrow" x="40" y="40">&#9656; WIREGUARD REMOTE ACCESS &#8212; TUNNEL PATH</text>
+  <text class="sub" x="40" y="60">Split-tunnel from any location &#8594; home router &#8594; mgmt node gateway &#8594; full 192.168.2.0/24 lab</text>
+
+  <!-- Remote laptop -->
+  <rect class="card remote" x="40" y="110" width="190" height="150" rx="10"/>
+  <text class="title" x="58" y="138">Remote laptop</text>
+  <text class="sub" x="58" y="156">any network, any local IP</text>
+  <text class="lbl" x="58" y="182">WireGuard client</text>
+  <text class="ip" x="58" y="202">tun 10.99.99.2/24</text>
+  <text class="sub" x="58" y="224">AllowedIPs:</text>
+  <text class="ipc" x="58" y="242">192.168.2.0/24 +</text>
+  <text class="ip" x="58" y="258">10.99.99.0/24</text>
+
+  <!-- Internet cloud -->
+  <ellipse class="card inet" cx="400" cy="185" rx="90" ry="55"/>
+  <text class="title" x="362" y="180" fill="#8fb8a4">Internet</text>
+  <text class="sub" x="350" y="200">UDP 51822 only</text>
+
+  <!-- Home router -->
+  <rect class="card router" x="560" y="120" width="180" height="130" rx="10"/>
+  <text class="title" x="578" y="148">Home router</text>
+  <text class="sub" x="578" y="166">you control it</text>
+  <text class="lbl" x="578" y="190">port-forward</text>
+  <text class="lbl" x="578" y="208" fill="#f0c040">UDP 51822 &#8594;</text>
+  <text class="ip" x="578" y="226">192.168.2.91</text>
+  <text class="sub" x="578" y="244">+ dyn-DNS name</text>
+
+  <!-- Mgmt node gateway -->
+  <rect class="card mgmt" x="820" y="100" width="240" height="170" rx="10"/>
+  <text class="title" x="838" y="128">Mgmt node &#8212; VPN gateway</text>
+  <text class="sub" x="838" y="146">Rocky 9 &#183; wg0 + IP forward</text>
+  <text class="ip" x="838" y="170">tun 10.99.99.1/24</text>
+  <text class="ipc" x="838" y="188">lan 192.168.2.91</text>
+  <text class="lbl" x="838" y="212">MASQUERADE</text>
+  <text class="sub" x="838" y="230">tunnel &#8594; lab LAN,</text>
+  <text class="sub" x="838" y="246">so no per-array routes</text>
+  <text class="sub" x="838" y="262">needed</text>
+
+  <!-- Lab subnet box -->
+  <rect class="card lab" x="820" y="300" width="240" height="220" rx="10"/>
+  <text class="title" x="838" y="328" fill="#00c8f0">Lab &#8212; 192.168.2.0/24</text>
+  <text class="ipc" x="838" y="352">.90  sim 810294 (REST)</text>
+  <text class="ipc" x="838" y="372">.93  sim 840006 (REST)</text>
+  <text class="ipc" x="838" y="392">.92  sim 845665 (REST)</text>
+  <text class="ipc" x="838" y="412">.94  sim 845666 (REST)</text>
+  <text class="lbl" x="838" y="438">.91:8080  SAM4H UI</text>
+  <text class="lbl" x="838" y="458">.91:9090  Cockpit</text>
+  <text class="lbl" x="838" y="478">.91       SSH / HORCM</text>
+  <text class="sub" x="838" y="500">reachable in browser remotely</text>
+
+  <!-- wires -->
+  <line class="wire" x1="230" y1="185" x2="310" y2="185"/>
+  <line class="wire" x1="490" y1="185" x2="560" y2="185"/>
+  <line class="wire" x1="740" y1="185" x2="820" y2="185"/>
+  <line class="wire" x1="940" y1="270" x2="940" y2="300"/>
+
+  <!-- encrypted tunnel overlay -->
+  <path class="tun" d="M 135 110 C 135 60, 940 50, 940 100"/>
+  <rect class="pill" x="470" y="38" width="200" height="22" rx="11"/>
+  <text class="tunlbl" x="486" y="53">encrypted WireGuard tunnel</text>
+
+  <!-- legend -->
+  <line class="tun" x1="60" y1="320" x2="110" y2="320"/>
+  <text class="lbl" x="120" y="324">encrypted tunnel (10.99.99.0/24)</text>
+  <line class="wire" x1="60" y1="345" x2="110" y2="345"/>
+  <text class="lbl" x="120" y="349">physical / internet path</text>
+  <text class="sub" x="60" y="392">Only UDP 51822 is exposed to the internet. WireGuard does not</text>
+  <text class="sub" x="60" y="408">respond to unauthenticated probes &#8212; silent to port scans.</text>
+  <text class="sub" x="60" y="428">SAM4H / Cockpit / array UIs stay behind the tunnel, never</text>
+  <text class="sub" x="60" y="444">port-forwarded directly.</text>
+  <text class="sub" x="60" y="478">Tunnel range 10.99.99.0/24 is deliberately exotic so it never</text>
+  <text class="sub" x="60" y="494">collides with the local IP range of wherever you connect from.</text>
+</svg>
+    <figcaption>FIG 1 &middot; Remote device &#8594; internet (UDP 51822) &#8594; home router &#8594; mgmt-node gateway &#8594; full lab subnet</figcaption>
+  </figure>
+  <div class="box info">
+    <div class="h">Why the mgmt node is the gateway</div>
+    It already reaches everything &mdash; all four array REST surfaces, SAM4H, HORCM, the sim VMs. "Remote access to the lab" therefore reduces to "reach the mgmt node, then let it route." One MASQUERADE rule on the mgmt node gives full-subnet reach without adding a single route on the arrays or the router.
+  </div>
+</section>
+
+<section id="subnet">
+  <h2 class="sec"><span class="num">02</span> The subnet-conflict problem</h2>
+  <p>This is the issue worth understanding before any config. <code>192.168.2.0/24</code> is one of the most common default home/office ranges. If you connect from a location that <em>also</em> uses 192.168.2.x, your device cannot tell whether <code>192.168.2.91</code> means "here" or "across the tunnel" &mdash; routing breaks. This is the classic overlapping-subnet conflict.</p>
+  <p>The fix used here: put the <strong>tunnel network on a deliberately exotic range</strong> &mdash; <code>10.99.99.0/24</code> &mdash; that will not collide with a typical local LAN. You then reach lab devices either by their lab IPs (when the local network is not 192.168.2.x) or, in the rare collision case, fall back to operating purely over SSH to the mgmt node's tunnel address <code>10.99.99.1</code>.</p>
+  <div class="box warn">
+    <div class="h">The permanent fix, if you ever hit a collision</div>
+    Because you control everything, the bulletproof option is to renumber the lab off 192.168.2.x onto something rare (e.g. <code>10.42.7.0/24</code>). More work &mdash; every VM, the HORCM configs, the vault, the startup script &mdash; but it removes collisions for good. Only worth doing if you actually travel to 192.168.2.x sites. If you renumber, the only WireGuard change is the client's <code>AllowedIPs</code> line.
+  </div>
+</section>
+
+<section id="router">
+  <h2 class="sec"><span class="num">03</span> Router port-forward</h2>
+  <p>Forward one UDP port to the mgmt node. Use a non-default port (not 51820) to cut down on automated scan noise.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Field</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Protocol</td><td class="mono-cell">UDP</td></tr>
+        <tr><td>External port</td><td class="mono-cell">51822</td></tr>
+        <tr><td>Internal IP</td><td class="mono-cell">192.168.2.91</td></tr>
+        <tr><td>Internal port</td><td class="mono-cell">51822</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">If your home WAN IP changes, enable dynamic-DNS on the router (e.g. <code>mylab.duckdns.org</code>) and use that hostname as the client <code>Endpoint</code>.</p>
+</section>
+
+<section id="keys">
+  <h2 class="sec"><span class="num">04</span> Install &amp; keys</h2>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">dnf</span> install -y wireguard-tools
+<span class="k">cd</span> /etc/wireguard
+<span class="k">umask</span> 077
+
+<span class="c"># server keypair</span>
+<span class="k">wg</span> genkey | tee server.key | wg pubkey > server.pub
+<span class="c"># one keypair per client device (laptop)</span>
+<span class="k">wg</span> genkey | tee laptop.key | wg pubkey > laptop.pub
+
+<span class="k">cat</span> server.key server.pub laptop.key laptop.pub</pre></div>
+  <div class="box crit">
+    <div class="h">Key hygiene</div>
+    Keep <code>umask 077</code> so keys are root-only. Generate a <strong>separate keypair per device</strong> &mdash; never reuse the laptop key on a phone. Private keys never leave the device they belong to; only the matching public key goes into the other end's config.
+  </div>
+</section>
+
+<section id="forward">
+  <h2 class="sec"><span class="num">05</span> IP forwarding</h2>
+  <p>The mgmt node must route packets from the tunnel into the lab subnet.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">cat</span> > /etc/sysctl.d/99-wireguard.conf << <span class="s">'EOF'</span>
+net.ipv4.ip_forward = 1
+<span class="s">EOF</span>
+<span class="k">sysctl</span> --system
+<span class="k">sysctl</span> net.ipv4.ip_forward     <span class="c"># confirm = 1</span></pre></div>
+</section>
+
+<section id="server">
+  <h2 class="sec"><span class="num">06</span> Server config</h2>
+  <p>First confirm the bridged interface name (the one holding 192.168.2.91) &mdash; the MASQUERADE rule references it:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">ip</span> -br addr | grep 192.168.2.91     <span class="c"># note iface: enp0s3 / eth0 / ...</span></pre></div>
+  <p>Then write the interface config. Tunnel net <code>10.99.99.0/24</code>; mgmt node is <code>.1</code>, laptop <code>.2</code>:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>/etc/wireguard/wg0.conf</span><span>root, chmod 600</span></div>
+  <pre><span class="v">[Interface]</span>
+Address = 10.99.99.1/24
+ListenPort = 51822
+PrivateKey = <span class="c">&lt;CONTENTS_OF_server.key&gt;</span>
+
+<span class="c"># NAT tunnel traffic onto the lab LAN so replies route back.</span>
+<span class="c"># enp0s3 = bridged 192.168.2.x interface — adjust to yours.</span>
+PostUp   = iptables -t nat -A POSTROUTING -s 10.99.99.0/24 -o enp0s3 -j MASQUERADE
+PostUp   = iptables -A FORWARD -i wg0 -j ACCEPT
+PostDown = iptables -t nat -D POSTROUTING -s 10.99.99.0/24 -o enp0s3 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT
+
+<span class="v">[Peer]</span>
+<span class="c"># laptop</span>
+PublicKey = <span class="c">&lt;CONTENTS_OF_laptop.pub&gt;</span>
+AllowedIPs = 10.99.99.2/32</pre></div>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">chmod</span> 600 /etc/wireguard/wg0.conf
+<span class="k">systemctl</span> enable --now wg-quick@wg0
+<span class="k">wg</span> show     <span class="c"># lists interface + laptop peer</span></pre></div>
+  <div class="box info">
+    <div class="h">Why MASQUERADE gives full-subnet reach for free</div>
+    With the NAT rule, lab devices see tunnel traffic as coming from the mgmt node's own 192.168.2.91 &mdash; an address they already know how to answer. So SAM4H, Cockpit, and every array REST surface are reachable without adding routes on the arrays or the router. That is what turns "SSH to the mgmt node" into "reach the whole subnet".
+  </div>
+</section>
+
+<section id="firewall">
+  <h2 class="sec"><span class="num">07</span> Firewall</h2>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">firewall-cmd</span> --permanent --add-port=51822/udp
+<span class="k">firewall-cmd</span> --permanent --add-masquerade
+<span class="k">firewall-cmd</span> --reload</pre></div>
+</section>
+
+<section id="client">
+  <h2 class="sec"><span class="num">08</span> Client config</h2>
+  <p>Split tunnel &mdash; only lab traffic crosses the tunnel; normal internet stays direct. <code>Endpoint</code> is your home public IP or dyn-DNS name.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>laptop &mdash; wg client config</span><span>ini</span></div>
+  <pre><span class="v">[Interface]</span>
+Address = 10.99.99.2/24
+PrivateKey = <span class="c">&lt;CONTENTS_OF_laptop.key&gt;</span>
+
+<span class="v">[Peer]</span>
+PublicKey = <span class="c">&lt;CONTENTS_OF_server.pub&gt;</span>
+Endpoint = mylab.duckdns.org:51822
+AllowedIPs = 10.99.99.0/24, 192.168.2.0/24
+PersistentKeepalive = 25</pre></div>
+  <ul>
+    <li><code>AllowedIPs</code> here is what delivers <strong>both</strong> reach levels: <code>192.168.2.0/24</code> routes the whole lab over the tunnel (browser to SAM4H / Cockpit / array UIs); <code>10.99.99.0/24</code> reaches the gateway itself.</li>
+    <li><code>PersistentKeepalive = 25</code> keeps the NAT mapping alive through the home router so the tunnel stays reachable.</li>
+  </ul>
+  <p class="note">Import on the laptop (WireGuard app on Windows/macOS, or <code>wg-quick up</code> on Linux) and connect.</p>
+</section>
+
+<section id="verify">
+  <h2 class="sec"><span class="num">09</span> Verify &amp; add devices</h2>
+  <div class="code"><div class="bar"><span><span class="dot"></span>laptop &mdash; once connected</span><span>operator</span></div>
+  <pre><span class="k">ping</span> 192.168.2.91                              <span class="c"># gateway over tunnel</span>
+<span class="k">ssh</span> -i ~/.ssh/ansible root@192.168.2.91        <span class="c"># operate the lab</span>
+<span class="k">curl</span> -sk https://192.168.2.90/ConfigurationManager/v1/objects/storages \
+     -u maintenance:raid-maintenance           <span class="c"># array REST, end to end</span></pre></div>
+  <p>Then in a browser: <code>https://192.168.2.91:8080</code> (SAM4H), <code>https://192.168.2.91:9090</code> (Cockpit), and the four array REST endpoints on .90 / .92 / .93 / .94.</p>
+  <h3>Adding another device</h3>
+  <p>Generate a fresh keypair, give it the next tunnel address, and append a peer block on the server &mdash; no restart-from-scratch needed:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">cd</span> /etc/wireguard; umask 077
+<span class="k">wg</span> genkey | tee phone.key | wg pubkey > phone.pub
+<span class="c"># append to wg0.conf:</span>
+<span class="c">#   [Peer]</span>
+<span class="c">#   PublicKey = &lt;phone.pub&gt;</span>
+<span class="c">#   AllowedIPs = 10.99.99.3/32</span>
+<span class="k">wg</span> setconf wg0 <(wg-quick strip wg0)     <span class="c"># apply without dropping the tunnel</span></pre></div>
+
+  <h3>Onboarding a colleague</h3>
+  <p>Each person needs the tunnel on their own machine &mdash; the lab lives on a private network, so <code>https://192.168.2.91:8080</code> is unreachable without it. Give one person one keypair and one tunnel IP; never share a config between people, so any single person can be revoked by deleting just their peer block. The work splits cleanly between them and you.</p>
+
+  <h4>WHAT THE COLLEAGUE DOES (on their machine)</h4>
+  <ol>
+    <li>Install the <strong>WireGuard</strong> app (Windows/macOS/Linux/iOS/Android).</li>
+    <li>Add an empty tunnel &mdash; it generates a keypair. They send <strong>only the public key</strong> to you (safe to share; the private key never leaves their device).</li>
+    <li>You send back their tunnel <code>Address</code> and the server public key + endpoint; they paste the config below and save.</li>
+  </ol>
+  <div class="code"><div class="bar"><span><span class="dot"></span>colleague's WireGuard client</span><span>ini</span></div>
+  <pre><span class="v">[Interface]</span>
+PrivateKey = <span class="c">(their own, already generated &mdash; leave as-is)</span>
+Address = 10.99.99.5/24          <span class="c"># the IP YOU assign them</span>
+
+<span class="v">[Peer]</span>
+PublicKey = 3Gy9BeYq5oFGozEWjcGk4avhWkCKxhjcRRGpuYgsIwc=   <span class="c"># server public key</span>
+Endpoint = hitachivantara.duckdns.org:51822
+AllowedIPs = 10.99.99.0/24, 192.168.2.0/24
+PersistentKeepalive = 25</pre></div>
+
+  <h4>WHAT YOU DO (on the mgmt node)</h4>
+  <p>Register their public key against the next free tunnel IP, then persist it so it survives a reboot:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="c"># add to the running tunnel (takes effect immediately)</span>
+<span class="k">wg</span> set wg0 peer <span class="v">&lt;COLLEAGUE_PUBLIC_KEY&gt;</span> allowed-ips 10.99.99.5/32
+
+<span class="c"># persist in the config so it survives reboot / restart</span>
+<span class="k">cat</span> >> /etc/wireguard/wg0.conf << <span class="s">'EOF'</span>
+
+<span class="v">[Peer]</span>
+<span class="c"># colleague — jane</span>
+PublicKey = <span class="v">&lt;COLLEAGUE_PUBLIC_KEY&gt;</span>
+AllowedIPs = 10.99.99.5/32
+<span class="s">EOF</span>
+
+<span class="k">wg</span> show     <span class="c"># confirm the new peer is listed</span></pre></div>
+
+  <div class="box info">
+    <div class="h">Assign a unique IP per person</div>
+    You (.1), laptop (.2), iPhone (.3) are taken &mdash; hand the next person <code>10.99.99.5</code>, the one after <code>10.99.99.6</code>, and so on. Each person's <code>Address</code> in their client and their <code>allowed-ips</code> on the server must match and be unique. Reusing an IP makes the two clients fight and neither works reliably.
+  </div>
+
+  <h4>TELL THEM TWO THINGS</h4>
+  <ul>
+    <li><strong>The cert warning is normal.</strong> <code>https://192.168.2.91:8080</code> uses a self-signed certificate, so the browser warns on first visit &mdash; click <em>Advanced &rarr; Proceed anyway</em>. Same for the Cockpit and array REST URLs.</li>
+    <li><strong>Tunnel on only when away.</strong> If they are ever physically on the same 192.168.2.x network as the lab, the tunnel must be <em>off</em> (the hairpin problem in &sect;11). From any other network, tunnel on. In practice a remote colleague just leaves it on.</li>
+  </ul>
+
+  <h4>REVOKING ACCESS</h4>
+  <p>Remove the person's <code>[Peer]</code> block from <code>/etc/wireguard/wg0.conf</code> and reload &mdash; their config instantly stops working, no effect on anyone else:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="c"># edit out their [Peer] block, then:</span>
+<span class="k">wg</span> setconf wg0 <(wg-quick strip wg0)     <span class="c"># apply without dropping the tunnel</span>
+<span class="c"># or, ad-hoc remove from the running tunnel immediately:</span>
+<span class="k">wg</span> set wg0 peer <span class="v">&lt;COLLEAGUE_PUBLIC_KEY&gt;</span> remove</pre></div>
+
+  <div class="box warn">
+    <div class="h">When hand-managed peers stop scaling</div>
+    A handful of people is fine to manage by hand this way. Past roughly five, the keypair-exchange and per-peer editing gets tedious &mdash; that is the point where a mesh VPN with a web admin (Tailscale, ZeroTier) starts to earn its place over hand-managed WireGuard. For a couple of colleagues, this runbook is all you need.
+  </div>
+</section>
+
+<section id="kpn">
+  <h2 class="sec"><span class="num">10</span> Real-world deploy: KPN + DuckDNS</h2>
+  <p>The generic steps above assume a router you fully control and a static public IP. A real home ISP connection &mdash; here a <strong>KPN Box 12</strong> with a dynamic IP &mdash; adds two moving parts: a dynamic-DNS name so the changing IP stays reachable, and the ISP router's particular port-forward behaviour. This is the configuration that actually got the lab online.</p>
+
+  <h3>Dynamic DNS with DuckDNS</h3>
+  <p>A home IP is rarely static. DuckDNS gives a free name that tracks it. Register at <code>duckdns.org</code> (sign in with any identity provider &mdash; it only confirms who you are, no repo access), add a subdomain (e.g. <code>hitachivantara</code>), and copy the account <strong>token</strong>. The client <code>Endpoint</code> then uses the name, not a number:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>laptop / phone WireGuard client</span><span>ini</span></div>
+  <pre>Endpoint = hitachivantara.duckdns.org:51822</pre></div>
+
+  <h4>AUTO-UPDATER ON THE MGMT NODE</h4>
+  <p>The name is only useful if something refreshes it when the IP rotates. The always-on mgmt node is the natural place for that &mdash; a tiny script on a 5-minute cron:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+  <pre><span class="k">mkdir</span> -p /opt/duckdns
+<span class="k">cat</span> > /opt/duckdns/update.sh << <span class="s">'EOF'</span>
+<span class="c">#!/bin/bash</span>
+curl -fsS <span class="s">"https://www.duckdns.org/update?domains=hitachivantara&token=__TOKEN__&ip="</span> \
+  -o /var/log/duckdns.log
+<span class="s">EOF</span>
+<span class="c"># insert the token without it showing on screen</span>
+<span class="k">read</span> -rsp <span class="s">'Paste DuckDNS token: '</span> T; echo
+<span class="k">sed</span> -i <span class="s">"s/__TOKEN__/$T/"</span> /opt/duckdns/update.sh
+<span class="k">chmod</span> 700 /opt/duckdns/update.sh; unset T
+<span class="k">/opt/duckdns/update.sh</span> && cat /var/log/duckdns.log     <span class="c"># must print OK</span>
+<span class="c"># schedule exactly one entry</span>
+( crontab -l 2>/dev/null; <span class="k">echo</span> <span class="s">"*/5 * * * * /opt/duckdns/update.sh >/dev/null 2>&amp;1"</span> ) | crontab -</pre></div>
+  <div class="box warn">
+    <div class="h">The update URL is fragile to stray characters</div>
+    The parameter is <code>&amp;ip=</code> (empty = auto-detect the public IP). A single stray character on the end &mdash; <code>&amp;ip="="</code>, <code>...22.64"4"</code> &mdash; makes DuckDNS return <code>KO</code> instead of <code>OK</code>. If you get <code>KO</code> with a valid token, suspect the URL, not the token. Building it from <code>$T</code> / <code>$DOMAIN</code> variables avoids the trailing-character trap.
+  </div>
+
+  <h3>KPN Box 12 port-forward</h3>
+  <p>On the KPN Box the feature is <strong>Netwerk &rarr; Poorten openzetten</strong> (port forwarding). The rule that works:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Field (NL)</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Status</td><td class="mono-cell">ON</td><td>The toggle must be green/on &mdash; a saved rule sits inactive until enabled</td></tr>
+        <tr><td>Protocol</td><td class="mono-cell">UDP</td><td>WireGuard is UDP only</td></tr>
+        <tr><td>Internet IP adres</td><td class="mono-cell">(empty)</td><td>Source filter &mdash; leave blank to allow any source</td></tr>
+        <tr><td>Internet poort nummer</td><td class="mono-cell">51822</td><td>External port</td></tr>
+        <tr><td>Doel IP-adres</td><td class="mono-cell">192.168.2.91</td><td>The mgmt node</td></tr>
+        <tr><td>Doel poort nummer</td><td class="mono-cell">51822</td><td>Internal port</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Binding the rule to the device</div>
+    KPN offers an <strong>Apparaat</strong> (device) dropdown. A VirtualBox VM (MAC prefix <code>08:00:27</code>) bridged through the Windows host may not appear there the way a physical box does. The rule works bound by <strong>Doel IP-adres</strong> alone; if the form insists on a device, set the bridged adapter's <strong>Promiscuous Mode = Allow All</strong> in VirtualBox (VM powered off) so the VM is a first-class LAN device. A DHCP reservation for 192.168.2.91 keeps the target stable.
+  </div>
+
+  <h3>Confirm there is no CGNAT</h3>
+  <p>Port-forwarding only works with a real public IP. Compare two numbers: what the world sees, and what the router's WAN shows.</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>any LAN machine</span><span></span></div>
+  <pre><span class="k">curl</span> ifconfig.me              <span class="c"># e.g. 77.171.22.64</span>
+<span class="c"># compare to the KPN Box status page WAN IPv4</span></pre></div>
+  <p>If they <strong>match</strong>, you have a routable public IP and forwarding works (this lab: they matched at <code>77.171.22.64</code>). If the router shows a <code>100.64.x.x</code> carrier address while the world sees something else, that is CGNAT &mdash; no IPv4 forward can work, and the fix is to use IPv6 instead (KPN assigns each device a routable IPv6 address, no forward needed).</p>
+</section>
+
+<section id="journey">
+  <h2 class="sec"><span class="num">11</span> Troubleshooting journey</h2>
+  <p>Getting this online took a chain of dead-ends, each instructive. Recording them because the symptoms are misleading and the same traps recur on any home-ISP deployment. The order matters: each step ruled something out and pointed at the next.</p>
+
+  <h3>The misleading symptoms</h3>
+  <ul>
+    <li>Tunnel "active" in the client app, but no ping, no access.</li>
+    <li>Activating the tunnel <em>broke</em> access to the local network and the router.</li>
+    <li><code>tcpdump</code> on the server showed packets sometimes, silence other times &mdash; seemingly at random.</li>
+  </ul>
+
+  <h4>TRAP 1 &mdash; TESTING FROM INSIDE THE HOME LAN (hairpin)</h4>
+  <p>The client `AllowedIPs` includes <code>192.168.2.0/24</code>. When the test machine is <em>on</em> 192.168.2.x, activating the tunnel tells it to route its own LAN &mdash; including the router at .254 &mdash; <em>through</em> the tunnel, which it cannot deliver locally. Result: local access dies, and handshakes loop back through the router's NAT and fail. <strong>tcpdump showing a source of <code>192.168.2.100</code> is the tell.</strong> A tunnel whose AllowedIPs covers the local subnet simply cannot be tested from that subnet &mdash; it must be tested from genuinely outside (mobile data).</p>
+
+  <h4>TRAP 2 &mdash; A SECOND, FULL-TUNNEL VPN</h4>
+  <p>A commercial VPN tunnel was also configured on the laptop with <code>AllowedIPs = 0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1</code> &mdash; the "route everything" pattern. While active, it captured the lab handshake packets too, sending them out through the commercial provider instead of to the home IP. <strong>Two WireGuard tunnels with overlapping routes; the all-traffic one wins.</strong> Lesson: only one tunnel active at a time during testing; a full-tunnel VPN silently swallows a split-tunnel's traffic.</p>
+
+  <h4>TRAP 3 &mdash; THE STALE DNS NAME (the root cause)</h4>
+  <p>This was the real culprit. The ISP IP had silently rotated <strong>weeks earlier</strong> (<code>205.147.16.103</code> &rarr; <code>77.171.22.64</code>), but the DuckDNS auto-updater had never been finished &mdash; so <code>hitachivantara.duckdns.org</code> still pointed at the <em>old, dead</em> address. Every handshake from outside was being sent to a stranger who now held that IP. <strong>tcpdump was silent from mobile data not because of a firewall, but because the packets were never aimed at the right place.</strong></p>
+  <div class="box crit">
+    <div class="h">The diagnostic that cracked it</div>
+    <code>curl ifconfig.me</code> returned <code>77.171.22.64</code>, but <code>nslookup hitachivantara.duckdns.org 8.8.8.8</code> still returned <code>205.147.16.103</code>. The mismatch was the whole answer. Always query a <strong>public</strong> resolver (<code>8.8.8.8</code>) &mdash; the local router (<code>192.168.2.254</code>) caches DNS and will keep showing the stale answer even after a flush, hiding the problem.
+  </div>
+
+  <h3>The signal of success</h3>
+  <p>Once DuckDNS pointed at the right IP, the very first handshake from mobile data told the whole story in three <code>tcpdump</code> lines:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>tcpdump -ni enp0s3 udp port 51822 &mdash; from mobile data</span><span></span></div>
+  <pre>80.187.103.143.18733 > 192.168.2.91.51822: UDP, length 148   <span class="c"># handshake init (mobile IP)</span>
+192.168.2.91.51822 > 80.187.103.143.18733: UDP, length 92    <span class="c"># server RESPONSE</span>
+80.187.103.143.18733 > 192.168.2.91.51822: UDP, length 32    <span class="c"># confirmed; tunnel up</span></pre></div>
+  <p>The source being a <strong>mobile</strong> address (not 192.168.2.x), a <strong>reply</strong> from the server (length 92), and <code>wg show</code> then reporting <code>latest handshake</code> with <strong>received</strong> bytes &gt; 0 &mdash; that trio is the unambiguous "it works" signal. Received-bytes climbing is the proof replies get back, not just that packets leave.</p>
+
+  <h3>Debugging checklist, in order</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>#</th><th>Check</th><th>What it proves</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>wg show</code> on server: interface up, listening 51822, peers present</td><td>Server side built correctly</td></tr>
+        <tr><td>2</td><td><code>firewall-cmd --list-all --zone=public</code>: 51822/udp + masquerade, LAN iface in zone</td><td>Firewall accepts inbound</td></tr>
+        <tr><td>3</td><td><code>curl ifconfig.me</code> vs router WAN IP</td><td>Real public IP, not CGNAT</td></tr>
+        <tr><td>4</td><td><code>nslookup &lt;name&gt; 8.8.8.8</code> equals current public IP</td><td>DNS name not stale (query public resolver!)</td></tr>
+        <tr><td>5</td><td>Only one tunnel active; test machine NOT on the lab subnet</td><td>No hairpin, no full-tunnel VPN capture</td></tr>
+        <tr><td>6</td><td><code>tcpdump</code> from mobile data shows a non-LAN source + a reply</td><td>Full inbound + return path works</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box tip">
+    <div class="h">The one-sentence lesson</div>
+    Most "WireGuard won't connect" mysteries on a home ISP are not the firewall or the keys &mdash; they are <strong>testing from inside the LAN</strong> or a <strong>stale dynamic-DNS name</strong>. Rule those two out first, from outside, querying a public DNS resolver.
+  </div>
+</section>
+
+
+<section id="security">
+  <h2 class="sec"><span class="num">12</span> Security posture</h2>
+  <ul>
+    <li><strong>One UDP port exposed.</strong> WireGuard is silent to unauthenticated traffic &mdash; it does not respond to a port scan without a valid key, unlike an exposed web UI. This is the central reason to tunnel rather than port-forward SAM4H directly.</li>
+    <li><strong>Never port-forward SAM4H (8080) or Cockpit (9090) to the internet.</strong> They carry known management credentials. Keep them behind the tunnel where the only internet-facing service is WireGuard's authenticated endpoint.</li>
+    <li><strong>One keypair per device.</strong> Each gets its own <code>[Peer]</code> block and unique <code>10.99.99.x/32</code>. Revoking a lost device = deleting its peer block.</li>
+    <li><strong>Strong UI credentials.</strong> SAM4H and Cockpit are now reachable from any tunnel device, so keep those passwords strong.</li>
+    <li><strong>Split tunnel</strong> means only lab ranges cross the VPN; your general browsing is unaffected and the tunnel carries only what it must.</li>
+  </ul>
+  <div class="box crit">
+    <div class="h">The single rule</div>
+    The internet sees exactly one thing: an authenticated UDP port that ignores everyone without a key. Everything else &mdash; the management UIs, the arrays, SSH &mdash; lives behind it. That is the whole security model, and it is a strong one.
+  </div>
+  <div class="box info">
+    <div class="h">Relationship to the other documents</div>
+    This is a deployment concern layered on top of the built lab. Endpoints and credentials referenced here are defined in the Installation Guide; the production collector in Document 4 can sit behind the same tunnel when it reaches live arrays across sites.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; VSP Lab &middot; Remote Access (WireGuard) v4</span>
+  <span>Document 6 &middot; Self-hosted VPN</span>
+</footer>
+</div>
+</body>
+</html>
