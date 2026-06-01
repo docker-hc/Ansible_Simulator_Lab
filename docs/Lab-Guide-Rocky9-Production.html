@@ -158,6 +158,7 @@
     <li><a href="#wrapper">Production wrapper</a></li>
     <li><a href="#run">On-demand run</a></li>
     <li><a href="#scale">Scale &amp; safety</a></li>
+    <li><a href="#facts">Report contents</a></li>
     <li><a href="#ref">Quick reference</a></li>
   </ol>
 </nav>
@@ -383,8 +384,34 @@ STAMP=$(date +%Y-%m-%d_%H%M%S)
   </div>
 </section>
 
+<section id="facts">
+  <h2 class="sec"><span class="num">10</span> Report contents</h2>
+  <p>The export gathers nine fact types per array. Six come from REST fact modules; three were added later &mdash; two more REST modules plus a raidcom-based license collector (licenses are not exposed by any VSP Ansible module). Each becomes a tab in the workbook and a CSV.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Fact type</th><th>Source</th><th>Module / tool</th></tr></thead>
+      <tbody>
+        <tr><td>Storage system</td><td>REST</td><td class="mono-cell">hv_storagesystem_facts</td></tr>
+        <tr><td>Parity groups</td><td>REST</td><td class="mono-cell">hv_paritygroup_facts</td></tr>
+        <tr><td>Ports</td><td>REST</td><td class="mono-cell">hv_storage_port_facts</td></tr>
+        <tr><td>Pools</td><td>REST</td><td class="mono-cell">hv_storagepool_facts</td></tr>
+        <tr><td>LDEVs</td><td>REST</td><td class="mono-cell">hv_ldev_facts</td></tr>
+        <tr><td>Host groups</td><td>REST</td><td class="mono-cell">hv_hg_facts</td></tr>
+        <tr><td>Host mode options</td><td>REST</td><td class="mono-cell">hv_supported_host_mode_facts</td></tr>
+        <tr><td>Journals</td><td>REST</td><td class="mono-cell">hv_journal_facts</td></tr>
+        <tr><td>HBA WWNs</td><td>raidcom</td><td class="mono-cell">gather_hba_wwn.py</td></tr>
+        <tr><td>Licenses</td><td>raidcom</td><td class="mono-cell">gather_licenses.py</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">The three later additions</div>
+    Host mode options (the array's supported HMO catalog), journals (UR replication journal volumes), and licenses (product/feature licenses via <code>raidcom get license</code>). The raidcom gathers need HORCM running + a login &mdash; the production wrapper handles HORCM lifecycle, the gather scripts log in themselves. Full detail, including the loader handling and gotchas, is in Document 9.
+  </div>
+</section>
+
 <section id="ref">
-  <h2 class="sec"><span class="num">10</span> Quick reference</h2>
+  <h2 class="sec"><span class="num">11</span> Quick reference</h2>
   <div class="tbl">
     <table>
       <thead><tr><th>Task</th><th>Command</th></tr></thead>

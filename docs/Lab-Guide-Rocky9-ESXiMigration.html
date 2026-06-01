@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara VirtualBox to ESXi Migration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#06110f; --bg2:#0a1a16; --panel:#0a1714; --panel2:#102420;
+    --line:#1d3a32; --line2:#2a5248;
+    --jade:#3ad6b0; --jade-dim:#28a085; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#163931;
+    --txt:#d8efe8; --txt-dim:#8fc0b3; --muted:#5e9085;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(58,214,176,.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--jade); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--jade)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:780px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--jade); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.amber b{color:var(--amber)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--jade)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--jade)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--jade-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--jade);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--jade); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--jade); white-space:nowrap;}
+  .code{background:#040d0b; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#1d3a32; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(58,214,176,.08); border-color:var(--jade)}
+  .box.info .h{color:var(--jade)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--jade); font-size:12px}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--jade); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--jade); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Install &middot; Troubleshoot &middot; Simulator</div>
+    <div>Production &middot; Multi-Model</div>
+    <div>Remote Access &middot; Access Control</div>
+    <div class="cur">&#9656; DOCUMENT 8</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>VirtualBox &rarr; ESXi<br><span class="accent">Migration</span></h1>
+  <p class="lede">Relocating the four-array lab off a laptop and onto a company VMware/ESXi host &mdash; export to OVA, convert and import, re-map networking, swap Guest Additions for VMware Tools, and re-pin the MAC-dependent pieces (port-forward, DHCP, WireGuard) so the lab comes back up exactly as before, but always-on and reachable.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v4</b></span>
+    <span class="chip cyan">VBox <b>&rarr; ESXi</b></span>
+    <span class="chip">via <b>OVA / OVF Tool</b></span>
+    <span class="chip amber">re-pin <b>MAC + net</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">Why ESXi, not a file share</a></li>
+    <li><a href="#prereq">Prerequisites &amp; what to request</a></li>
+    <li><a href="#prep">Prepare the VMs (laptop side)</a></li>
+    <li><a href="#export">Export to OVA</a></li>
+    <li><a href="#import">Import into ESXi</a></li>
+    <li><a href="#network">Re-map networking</a></li>
+    <li><a href="#tools">Guest Additions &rarr; VMware Tools</a></li>
+    <li><a href="#repin">Re-pin MAC-dependent pieces</a></li>
+    <li><a href="#verify">Bring-up &amp; verify</a></li>
+    <li><a href="#after">After migration</a></li>
+  </ol>
+</nav>
+<section id="why">
+  <h2 class="sec"><span class="num">01</span> Why ESXi, not a file share</h2>
+  <p>The instinct &mdash; "move the VM files to a company share" &mdash; mixes up two different things. A file share (SMB/NFS) is <strong>storage</strong>; an ESXi host is a <strong>hypervisor</strong>. You can park powered-off VM files on a share, but running a VM whose virtual disk lives on a network share is slow and corruption-prone: every disk I/O crosses the network, and a brief disconnect mid-write can wreck the disk. So the share is fine for staging and backups, but the lab should <em>run</em> on ESXi.</p>
+  <div class="box info">
+    <div class="h">This also fixes the travel problem &mdash; which the share does not</div>
+    The "can't use it when travelling" issue is about the bridged 192.168.2.x network, not about where the files live. Moving files to a share changes nothing there. Running the lab on an always-on ESXi host and reaching it over WireGuard (Document 6) is what actually solves travel: you don't carry the lab, you tunnel to it. ESXi delivers off-the-laptop, always-on, and team-accessible in one move.
+  </div>
+  <p>Recognise what this migration really is: the lab stops being "a thing on a laptop" and becomes a <strong>shared service on company infrastructure</strong> &mdash; the production posture of Documents 4 and 7.</p>
+</section>
+
+<section id="prereq">
+  <h2 class="sec"><span class="num">02</span> Prerequisites &amp; what to request</h2>
+  <p>Before touching a VM, confirm two non-technical things and gather what you will need from whoever runs the platform.</p>
+  <h3>Confirm the CPU constraint is gone</h3>
+  <p>The lab runs Rocky 9 (not RHEL 10) only because the laptop CPU is <code>x86-64-v2</code>. A server-grade ESXi host is almost certainly <code>x86-64-v3</code>+, so that constraint likely disappears &mdash; you could even run RHEL 10 on rebuilt VMs later. Confirm the host's CPU generation so you are not surprised either way.</p>
+  <h3>What to request from the platform team</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Resource</th><th>For the lab</th></tr></thead>
+      <tbody>
+        <tr><td>Datastore space</td><td>~200&ndash;300 GB for the 5 VMs (mgmt 16 GB RAM disk + 4 sims + 2 nodes)</td></tr>
+        <tr><td>vCPU / RAM</td><td>mgmt 4 vCPU / 16 GB; each sim 2 vCPU / 8 GB; nodes 1 vCPU / 2 GB</td></tr>
+        <tr><td>Port group / VLAN</td><td>one network the VMs share (replaces the bridged + internal nets)</td></tr>
+        <tr><td>IP plan</td><td>static IP for the mgmt node ideally; range for the sims</td></tr>
+        <tr><td>Upload method</td><td>vSphere web client access, or OVF Tool + host credentials</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box warn">
+    <div class="h">This is a request, not a self-service action</div>
+    Datastore space, a port group, and IPs are granted by whoever runs the ESXi platform. Bring the resource list above. Also confirm whether you may upload OVAs directly or must hand them to an admin to import.
+  </div>
+</section>
+
+<section id="prep">
+  <h2 class="sec"><span class="num">03</span> Prepare the VMs (laptop side)</h2>
+  <p>A little cleanup before export makes the import far smoother.</p>
+  <div class="step"><div class="n">1</div><div class="body"><h4>POWER DOWN CLEANLY</h4>
+    <p>Shut each guest down from inside (<code>shutdown -h now</code>), not a hard power-off, so filesystems are consistent in the exported image.</p></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><h4>REMOVE VBOX GUEST ADDITIONS</h4>
+    <p>They are VirtualBox-specific and conflict with VMware Tools later. On each guest before shutdown:</p>
+    <div class="code"><div class="bar"><span><span class="dot"></span>each guest</span><span>root</span></div>
+    <pre><span class="k">/opt/VBoxGuestAdditions-*/uninstall.sh</span> 2>/dev/null || true
+<span class="k">dnf</span> remove -y VirtualBox-guest-additions 2>/dev/null || true</pre></div></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><h4>NOTE THE CURRENT MACS &amp; IPS</h4>
+    <p>You will re-pin these after import. Record, per VM, the bridged IP, internal IP, and the mgmt node's MAC (the KPN port-forward and DHCP reservation key off it):</p>
+    <div class="code"><div class="bar"><span><span class="dot"></span>each guest</span><span>root</span></div>
+    <pre><span class="k">ip</span> -br addr ; ip link show | grep ether</pre></div></div></div>
+  <div class="step"><div class="n">4</div><div class="body"><h4>DETACH SHARED FOLDERS / ISOs</h4>
+    <p>Remove the VirtualBox shared folder (<code>/mnt/vm_share</code>) mounts and any attached ISOs &mdash; they will not exist on ESXi and cause boot delays. Comment their lines out of <code>/etc/fstab</code>.</p></div></div>
+</section>
+
+<section id="export">
+  <h2 class="sec"><span class="num">04</span> Export to OVA</h2>
+  <p>OVA is a single portable file bundling the VM config and disks, understood by both VirtualBox and VMware. Export each powered-off VM. Use OVF 2.0 for best VMware compatibility:</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>laptop &mdash; per VM</span><span>VBoxManage</span></div>
+  <pre><span class="k">VBoxManage</span> export <span class="s">"Rocky9-Ansible-Mgmt"</span> \
+  -o Rocky9-Ansible-Mgmt.ova --ovf20
+
+<span class="c"># repeat for each:</span>
+<span class="k">VBoxManage</span> export <span class="s">"rocky9-sim-810294"</span> -o sim-810294.ova --ovf20
+<span class="k">VBoxManage</span> export <span class="s">"rocky9-sim-840006"</span> -o sim-840006.ova --ovf20
+<span class="c"># ...840006 / 845665 / 845666, plus the two RHEL nodes</span></pre></div>
+  <div class="box tip">
+    <div class="h">The file share earns its keep here</div>
+    Stage the <code>.ova</code> files on the company file share &mdash; that is the right use of it. It gives the ESXi host a place to pull from, and leaves you a portable backup of each VM. Keep these OVAs even after a successful migration; they are a clean rebuild point.
+  </div>
+  <p class="note">Export is slow (each disk is compressed into the OVA) &mdash; budget time and disk space for roughly the size of the used data across all VMs.</p>
+</section>
+
+<section id="import">
+  <h2 class="sec"><span class="num">05</span> Import into ESXi</h2>
+  <p>Two ways, depending on the access you were granted.</p>
+  <h3>A &mdash; vSphere / ESXi web client (GUI)</h3>
+  <ol>
+    <li>Log into the ESXi host or vCenter web client.</li>
+    <li><strong>Create / Register VM &rarr; Deploy a virtual machine from an OVF or OVA file.</strong></li>
+    <li>Upload the <code>.ova</code> (or point at it on the datastore/share), pick the datastore, pick the target port group, and finish.</li>
+    <li>The disk converts (VDI &rarr; VMDK) automatically during deploy.</li>
+  </ol>
+  <h3>B &mdash; VMware OVF Tool (command line)</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>workstation with ovftool</span><span></span></div>
+  <pre><span class="k">ovftool</span> \
+  --datastore=<span class="v">datastore1</span> \
+  --network=<span class="s">"Lab-PortGroup"</span> \
+  --name=<span class="s">"Rocky9-Ansible-Mgmt"</span> \
+  Rocky9-Ansible-Mgmt.ova \
+  <span class="s">"vi://user@esxi-host.company.local/"</span></pre></div>
+  <div class="box warn">
+    <div class="h">If import rejects the OVA</div>
+    VirtualBox OVAs occasionally trip VMware's stricter OVF validation (a SHA-manifest or hardware-version quirk). Two fixes: re-export with <code>--ovf20</code> (done above), or pass <code>ovftool --lax</code> to relax validation. If a specific virtual hardware item is rejected, importing the <code>.ovf</code>+<code>.vmdk</code> pair (export without packaging into a single OVA) often sidesteps it.
+  </div>
+</section>
+
+<section id="network">
+  <h2 class="sec"><span class="num">06</span> Re-map networking</h2>
+  <p>This is the biggest conceptual change. On the laptop you had a <strong>bridged</strong> adapter (192.168.2.x) and an <strong>internal</strong> adapter (192.168.56.x). On ESXi those become <strong>port groups</strong>, and the company network is different from your home 192.168.2.x.</p>
+  <h3>Two viable models</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>How</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>Keep lab subnets, isolated</td><td>Create an ESXi <strong>internal-only port group</strong> (no uplink) carrying 192.168.2.x + 192.168.56.x exactly as today; only the mgmt node also gets a company-network NIC for access</td><td>Least change &mdash; HORCM, SAM4H, all configs keep their IPs; recommended</td></tr>
+        <tr><td>Re-IP onto company net</td><td>Put VMs directly on a company port group with company IPs</td><td>Only if policy requires it &mdash; means re-IPing every config</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Recommended: isolated lab network + dual-homed mgmt node</div>
+    Create an <strong>internal vSwitch/port group with no physical uplink</strong> and keep the lab on 192.168.2.0/24 + 192.168.56.0/24 untouched &mdash; every array IP, HORCM_CMD line, SAM4H registration, and the facts vault stay valid with zero edits. Give the <em>mgmt node</em> a second NIC on a company port group (or keep WireGuard as the only entry). The mgmt node remains the single gateway, exactly as in the remote-access design. This is by far the least disruptive path.
+  </div>
+  <p>In the VM settings after import, set each NIC's adapter type to <strong>VMXNET3</strong> (best ESXi performance) and attach it to the correct port group. The guest sees a new NIC name (e.g. <code>ens192</code> instead of <code>enp0s3</code>) &mdash; you will fix that in &sect;08.</p>
+</section>
+
+<section id="tools">
+  <h2 class="sec"><span class="num">07</span> Guest Additions &rarr; VMware Tools</h2>
+  <p>With Guest Additions already removed (&sect;03), install <strong>open-vm-tools</strong> on each guest after first boot on ESXi &mdash; it provides the guest/host integration VMware expects (clean shutdown, time sync, IP reporting):</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>each guest on ESXi</span><span>root</span></div>
+  <pre><span class="k">dnf</span> install -y open-vm-tools
+<span class="k">systemctl</span> enable --now vmtoolsd</pre></div>
+  <p class="note">On the sim VMs, integsim and its nginx dependency are unaffected by the hypervisor change &mdash; <code>libxcrypt-compat</code> and the rest carry over in the disk image. Only the kernel/hypervisor integration layer changes.</p>
+</section>
+
+<section id="repin">
+  <h2 class="sec"><span class="num">08</span> Re-pin MAC-dependent pieces</h2>
+  <p>Import gives each VM a <strong>new MAC address</strong>, and the guest sees a <strong>new NIC name</strong>. Several things keyed off the old values must be re-pinned, or the lab comes up with the wrong addresses.</p>
+  <div class="step"><div class="n">1</div><div class="body"><h4>FIX THE NIC NAME / IP BINDING</h4>
+    <p>NetworkManager bound the static IP to the old interface (<code>enp0s3</code>). On ESXi the NIC is typically <code>ens192</code>. Re-create the connection on the new interface:</p>
+    <div class="code"><div class="bar"><span><span class="dot"></span>each guest</span><span>root</span></div>
+    <pre><span class="k">nmcli</span> con show                       <span class="c"># find the new device name</span>
+<span class="k">nmcli</span> con add type ethernet ifname ens192 con-name lab \
+  ipv4.method manual ipv4.addresses 192.168.2.91/24 \
+  ipv4.gateway 192.168.2.254 ipv4.dns 8.8.8.8
+<span class="k">nmcli</span> con up lab</pre></div>
+    <p class="note">Use each VM's own recorded IP from &sect;03. The sims keep .90/.92/.93/.94; the mgmt node keeps .91.</p></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><h4>RE-POINT THE PORT-FORWARD / DHCP RESERVATION</h4>
+    <p>If you kept WireGuard on the mgmt node, the inbound port-forward (UDP 51822) and any DHCP reservation were tied to the old MAC. On the new network's router/firewall, update the forward to the mgmt node's new IP, and reserve the new MAC. If the lab is now behind the company network, this may instead be a company firewall rule or VPN &mdash; coordinate with the platform team.</p></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><h4>WIREGUARD &amp; DUCKDNS</h4>
+    <p>The WireGuard <em>config</em> (keys, peers, 10.99.99.x) is in the disk image and survives. What changes is the <strong>endpoint</strong>: the lab now lives behind the company's public IP, not your home KPN line. Update DuckDNS to the new public IP (or, if the company gives the host a static public IP, point the client <code>Endpoint</code> straight at it and retire DuckDNS). Re-test from outside per Document 6 &sect;11.</p></div></div>
+  <div class="step"><div class="n">4</div><div class="body"><h4>HORCM IS UNAFFECTED &mdash; IF YOU KEPT THE SUBNETS</h4>
+    <p>Because HORCM_CMD uses the array IPCMD addresses (192.168.2.90 etc.), keeping the isolated lab subnet (&sect;06 recommended model) means every HORCM config, SAM4H registration, and the facts vault stay valid with no edits. This is the single biggest reason to keep the lab subnets rather than re-IP.</p></div></div>
+</section>
+
+<section id="verify">
+  <h2 class="sec"><span class="num">09</span> Bring-up &amp; verify</h2>
+  <p>Boot in the same dependency order the lab always used: sims first (so their REST surfaces are live), then the mgmt node (which starts HORCM against them).</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>verification from the mgmt node</span><span>root</span></div>
+  <pre><span class="c"># network identity correct?</span>
+<span class="k">ip</span> -br addr | grep 192.168.2.91
+<span class="c"># sims reachable on REST?</span>
+<span class="k">for</span> ip <span class="k">in</span> 90 92 93 94; <span class="k">do</span> curl -sk -o /dev/null -w <span class="s">"%{http_code}\n"</span> https://192.168.2.$ip; <span class="k">done</span>
+<span class="c"># HORCM sees the arrays?</span>
+<span class="k">for</span> i <span class="k">in</span> 1001 1004 1005 1006; <span class="k">do</span> raidqry -l -IH${i} | grep -vE <span class="s">'^No|^$|^Group'</span> | head -1; <span class="k">done</span>
+<span class="c"># full pipeline still works?</span>
+<span class="k">bash</span> scripts/run-facts-export.sh
+<span class="c"># tamper baseline will differ (new MACs/NIC names) — re-baseline once verified:</span>
+<span class="k">bash</span> scripts/harden-lab.sh --lock</pre></div>
+  <div class="box tip">
+    <div class="h">Expect the tamper baseline to flag changes</div>
+    The NIC reconfiguration legitimately changes files. After confirming the lab is healthy, run <code>harden-lab.sh --lock</code> to re-baseline so the post-migration state becomes the new known-good. This is the intended use of the re-baseline step.
+  </div>
+</section>
+
+<section id="after">
+  <h2 class="sec"><span class="num">10</span> After migration</h2>
+  <h3>What got better</h3>
+  <ul>
+    <li><strong>Always-on</strong> &mdash; the lab runs on the host regardless of your laptop, so travel access (via WireGuard) is reliable.</li>
+    <li><strong>Off your laptop</strong> &mdash; disk space and resources freed; the laptop is now just a client.</li>
+    <li><strong>Team-ready</strong> &mdash; shared infrastructure makes the access-control model of Document 7 (named accounts, groups, scoped sudo) the natural way to govern it.</li>
+    <li><strong>Snapshots are first-class</strong> &mdash; ESXi/vCenter snapshots and (if available) backup tooling replace the fragile shared-base-disk VirtualBox snapshots.</li>
+  </ul>
+  <h3>Cleanup &amp; records</h3>
+  <ul>
+    <li>Keep the OVAs on the share as a rebuild point until the ESXi VMs have run cleanly for a while.</li>
+    <li>Take a fresh ESXi snapshot of the mgmt node once verified (name e.g. <code>esxi-vspb26-migrated-2026</code>).</li>
+    <li>Commit any config changes (NIC names, endpoint) to the repo; re-run <code>harden-lab.sh --lock</code> to re-baseline.</li>
+    <li>Update the WireGuard/DuckDNS notes in Document 6 to reflect the new endpoint.</li>
+  </ul>
+  <div class="box info">
+    <div class="h">Relationship to the other documents</div>
+    This migration turns the lab into the shared service that Documents 4 (production export), 6 (remote access), and 7 (access control) assume. Once on ESXi with the isolated lab subnet preserved, every prior document applies unchanged &mdash; only the hosting layer beneath them moved.
+  </div>
+  <div class="box warn">
+    <div class="h">Reconsider the OS now the CPU constraint is gone</div>
+    On server-grade ESXi hardware the <code>x86-64-v2</code> limit that forced Rocky 9 likely no longer applies. You do not have to change anything &mdash; the migrated Rocky 9 VMs run fine &mdash; but if you ever rebuild, RHEL 10 / newer SVOS support becomes an option worth weighing (see Document 5 on model/microcode currency).
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; Storage Automation &middot; VirtualBox to ESXi Migration v4</span>
+  <span>Document 8 &middot; Hosting</span>
+</footer>
+
+</div>
+</body>
+</html>

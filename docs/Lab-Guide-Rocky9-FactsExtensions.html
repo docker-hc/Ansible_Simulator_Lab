@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HitachiVantara Facts Extensions &amp; Hardening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0710; --bg2:#160c1a; --panel:#140b18; --panel2:#1f1226;
+    --line:#3a2342; --line2:#52325c;
+    --plum:#c77dff; --plum-dim:#9d4edd; --cyan:#00c8f0; --green:#00e8a0;
+    --amber:#f0c040; --red:#ff6b6b; --navy:#2e1a38;
+    --txt:#ece0f0; --txt-dim:#bda8c8; --muted:#8a6e98;
+    --mono:'Space Mono',monospace; --sans:'DM Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt); font-family:var(--sans);
+    font-size:16px; line-height:1.7; letter-spacing:.1px;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(199,125,255,.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(0,200,240,.05), transparent 45%);
+    background-attachment:fixed;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 28px 120px}
+  header.masthead{padding:64px 0 40px; border-bottom:1px solid var(--line);
+    margin-bottom:8px; position:relative;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:3px;
+    color:var(--plum); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:"\25B8"; color:var(--cyan)}
+  h1{font-size:clamp(30px,5vw,46px); font-weight:700; line-height:1.1;
+    letter-spacing:-.5px; color:#fff; margin-bottom:14px;}
+  h1 .accent{color:var(--plum)}
+  .lede{font-size:18px; color:var(--txt-dim); max-width:780px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:26px;
+    font-family:var(--mono); font-size:12px;}
+  .chip{background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; color:var(--txt-dim);}
+  .chip b{color:var(--plum); font-weight:700}
+  .chip.cyan b{color:var(--cyan)}
+  .chip.green b{color:var(--green)}
+  .doc-tag{position:absolute; top:64px; right:0; font-family:var(--mono);
+    font-size:11px; color:var(--muted); text-align:right; line-height:1.9;}
+  .doc-tag .cur{color:var(--plum)}
+  nav.toc{background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:26px 30px; margin:36px 0 50px;}
+  nav.toc h2{font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:var(--cyan); text-transform:uppercase; margin-bottom:18px;}
+  nav.toc ol{list-style:none; counter-reset:toc; columns:2; column-gap:40px}
+  nav.toc li{counter-increment:toc; margin-bottom:11px; break-inside:avoid}
+  nav.toc a{color:var(--txt); text-decoration:none; font-size:15px;
+    display:flex; gap:12px; align-items:baseline; transition:color .15s;}
+  nav.toc a:hover{color:var(--plum)}
+  nav.toc a::before{content:counter(toc,decimal-leading-zero);
+    font-family:var(--mono); font-size:12px; color:var(--plum-dim); flex-shrink:0;}
+  section{margin-bottom:62px; scroll-margin-top:24px}
+  h2.sec{font-size:26px; font-weight:700; color:#fff; letter-spacing:-.3px;
+    padding-bottom:14px; margin-bottom:22px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:14px;}
+  h2.sec .num{font-family:var(--mono); font-size:14px; color:var(--plum);
+    border:1px solid var(--line2); border-radius:6px; padding:3px 9px; flex-shrink:0;}
+  h3{font-size:18px; font-weight:700; color:var(--cyan); margin:30px 0 12px; letter-spacing:-.2px;}
+  h4{font-size:14px; font-weight:700; color:var(--plum); margin:22px 0 10px;
+    font-family:var(--mono); letter-spacing:.5px;}
+  p{margin-bottom:16px}
+  p.note{color:var(--txt-dim); font-size:15px}
+  ul,ol{margin:0 0 18px 24px}
+  li{margin-bottom:8px}
+  strong{color:#fff; font-weight:700}
+  code{font-family:var(--mono); font-size:13px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 6px;
+    color:var(--plum); white-space:nowrap;}
+  .code{background:#0a0510; border:1px solid var(--line); border-radius:10px;
+    margin:18px 0 22px; overflow:hidden;}
+  .code .bar{background:var(--panel2); border-bottom:1px solid var(--line);
+    padding:9px 16px; font-family:var(--mono); font-size:11px; color:var(--muted);
+    letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;}
+  .code .bar .dot{display:inline-block; width:10px; height:10px; border-radius:50%;
+    background:#3a2342; margin-right:6px; vertical-align:middle}
+  .code pre{padding:18px 20px; overflow-x:auto; font-family:var(--mono);
+    font-size:12.5px; line-height:1.62; color:var(--txt);}
+  .code pre .c{color:var(--muted)}
+  .code pre .k{color:var(--cyan)}
+  .code pre .s{color:var(--green)}
+  .code pre .v{color:var(--amber)}
+  .code pre .p{color:var(--txt-dim)}
+  .box{border-radius:10px; padding:18px 22px; margin:20px 0; border-left:3px solid; font-size:15px;}
+  .box .h{font-family:var(--mono); font-size:12px; letter-spacing:1.5px;
+    text-transform:uppercase; margin-bottom:8px; font-weight:700}
+  .box.tip{background:rgba(0,232,160,.06); border-color:var(--green)}
+  .box.tip .h{color:var(--green)}
+  .box.warn{background:rgba(240,192,64,.07); border-color:var(--amber)}
+  .box.warn .h{color:var(--amber)}
+  .box.crit{background:rgba(255,107,107,.08); border-color:var(--red)}
+  .box.crit .h{color:var(--red)}
+  .box.info{background:rgba(199,125,255,.08); border-color:var(--plum)}
+  .box.info .h{color:var(--plum)}
+  .tbl{overflow-x:auto; margin:20px 0; border:1px solid var(--line); border-radius:10px}
+  table{width:100%; border-collapse:collapse; font-size:14px; min-width:560px}
+  th{background:var(--navy); color:#fff; font-weight:700; text-align:left;
+    padding:11px 14px; font-family:var(--mono); font-size:12px; letter-spacing:.5px}
+  td{padding:10px 14px; border-top:1px solid var(--line); color:var(--txt-dim)}
+  td:first-child,th:first-child{padding-left:18px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  td code{font-size:12px}
+  .mono-cell{font-family:var(--mono); color:var(--plum); font-size:12px}
+  .step{display:flex; gap:16px; margin:22px 0}
+  .step .n{font-family:var(--mono); font-size:13px; color:var(--bg);
+    background:var(--plum); width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700}
+  .step .body{flex:1}
+  .step .body h4{margin-top:2px}
+  footer{border-top:1px solid var(--line); padding-top:28px; margin-top:60px;
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  ::selection{background:var(--plum); color:var(--bg)}
+  @media(max-width:680px){nav.toc ol{columns:1} .doc-tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="masthead">
+  <div class="doc-tag">
+    <div>Install &middot; Troubleshoot &middot; Simulator</div>
+    <div>Production &middot; Multi-Model &middot; Remote</div>
+    <div>Access Control &middot; ESXi Migration</div>
+    <div class="cur">&#9656; DOCUMENT 9</div>
+  </div>
+  <div class="eyebrow">HitachiVantara &middot; Storage Automation</div>
+  <h1>Facts Extensions<br><span class="accent">&amp; Hardening</span></h1>
+  <p class="lede">Extending the facts-export report with licenses, host mode options, and journals &mdash; and the hardening/tamper-detection tooling that protects the lab. Captures the gather patterns, the loader gotchas that bit us, and the one-command hardening script.</p>
+  <div class="meta-row">
+    <span class="chip">Rev <b>v1</b></span>
+    <span class="chip cyan">+3 fact <b>types</b></span>
+    <span class="chip green">harden-lab <b>.sh</b></span>
+    <span class="chip">raidcom + <b>REST</b></span>
+  </div>
+</header>
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">What this adds</a></li>
+    <li><a href="#licenses">Licenses via raidcom</a></li>
+    <li><a href="#hmo">Host mode options</a></li>
+    <li><a href="#journals">Journals</a></li>
+    <li><a href="#loader">Two loaders, two fixes</a></li>
+    <li><a href="#gotchas">Gotchas we hit</a></li>
+    <li><a href="#harden">Hardening: harden-lab.sh</a></li>
+    <li><a href="#workflow">Edit-while-locked workflow</a></li>
+  </ol>
+</nav>
+
+<section id="overview">
+  <h2 class="sec"><span class="num">01</span> What this adds</h2>
+  <p>The base export (Document 4) gathers six fact types. This extension adds three more to the same pipeline: <strong>licenses</strong>, <strong>host mode options</strong>, and <strong>journals</strong> &mdash; each surfacing in both the Excel workbook and the CSV set as new tabs/files.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Fact type</th><th>Source</th><th>Module / tool</th><th>Per-array count (B26 sim)</th></tr></thead>
+      <tbody>
+        <tr><td>Licenses</td><td>raidcom</td><td class="mono-cell">gather_licenses.py</td><td>24 products</td></tr>
+        <tr><td>Host mode options</td><td>REST</td><td class="mono-cell">hv_supported_host_mode_facts</td><td>37 options</td></tr>
+        <tr><td>Journals</td><td>REST</td><td class="mono-cell">hv_journal_facts</td><td>0 (none configured)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box info">
+    <div class="h">Why two different mechanisms</div>
+    Host mode options and journals come from Ansible REST fact modules. Licenses are <strong>not exposed by any VSP Ansible module</strong> (only SDS Block has one), so licenses are read via <code>raidcom get license</code>, mirroring the existing HBA-WWN collector. One pipeline, two gather mechanisms.
+  </div>
+</section>
+
+<section id="licenses">
+  <h2 class="sec"><span class="num">02</span> Licenses via raidcom</h2>
+  <p>Because no VSP license fact module exists, <code>gather_licenses.py</code> runs <code>raidcom get license</code> per HORCM instance. It mirrors <code>gather_hba_wwn.py</code>: takes the same <code>serial:instance</code> map, logs in itself with the vault credentials, parses, logs out.</p>
+  <h3>The playbook task</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>playbooks/08-export-facts.yml</span><span>after the HBA WWN task</span></div>
+  <pre><span class="v">- name</span>: Gather licenses via raidcom
+  <span class="v">ansible.builtin.command</span>:
+    <span class="v">argv</span>:
+      - python3.11
+      - <span class="s">"{{ playbook_dir }}/../scripts/gather_licenses.py"</span>
+      - <span class="s">"--map"</span>
+      - <span class="s">"{{ hba_map }}"</span>          <span class="c"># reuses the WWN map</span>
+      - <span class="s">"--user"</span>
+      - <span class="s">"{{ vault_raidcom_user }}"</span>
+      - <span class="s">"--password"</span>
+      - <span class="s">"{{ vault_raidcom_password }}"</span>
+      - <span class="s">"--out"</span>
+      - <span class="s">"{{ raw_dir }}/licenses.json"</span>
+  <span class="v">changed_when</span>: false</pre></div>
+  <h3>The output format</h3>
+  <p>Real B26 <code>raidcom get license</code> output has the licence name as a trailing quoted field (may contain spaces, e.g. <code>"global-active device"</code>). The parser keys off the header and extracts the quoted name reliably. Each row gets the raw columns plus a derived <code>installed</code> boolean (from <code>STS == INS</code>). The diff keys on <code>PRO_ID</code> (product id).</p>
+  <div class="box warn">
+    <div class="h">Prerequisite: HORCM up + login</div>
+    The license gather needs a running HORCM instance and an authenticated session &mdash; the production wrapper does <code>horcmstart</code> (with a teardown trap), and the script does its own <code>raidcom -login</code>. Without HORCM attached you get <code>raidcom: [EX_ATTHOR] Can't be attached to HORC manager</code> (see &sect;06).
+  </div>
+</section>
+
+<section id="hmo">
+  <h2 class="sec"><span class="num">03</span> Host mode options</h2>
+  <p>Two distinct things, both worth having: the <strong>supported HMO catalog</strong> (the array's full option list) from <code>hv_supported_host_mode_facts</code>, and the <strong>per-host-group assignments</strong> (already inside <code>host_groups.json</code> as <code>hostMode</code> / <code>hostModeOptions</code>).</p>
+  <div class="code"><div class="bar"><span><span class="dot"></span>playbooks/08-export-facts.yml</span><span>REST, after host groups</span></div>
+  <pre><span class="v">- name</span>: Gather supported host mode options
+  <span class="v">hitachivantara.vspone_block.vsp.hv_supported_host_mode_facts</span>:
+    <span class="v">connection_info</span>:
+      <span class="v">address</span>: <span class="s">"{{ item.controller_ip_0 }}"</span>
+      <span class="v">username</span>: <span class="s">"{{ vault_raidcom_user }}"</span>
+      <span class="v">password</span>: <span class="s">"{{ vault_raidcom_password }}"</span>
+  <span class="v">register</span>: hmo_facts
+  <span class="v">loop</span>: <span class="s">"{{ vault_arrays }}"</span>
+  <span class="v">loop_control</span>:
+    <span class="v">label</span>: <span class="s">"{{ item.serial }}"</span></pre></div>
+  <div class="box warn">
+    <div class="h">The catalog is nested</div>
+    The module returns <code>{ host_modes: { host_mode_options: [...] } }</code> &mdash; the options list is one level deeper than a normal fact payload. The loader must unwrap <code>host_modes.host_mode_options</code> or it stores a dict instead of the list (37 options collapsed to a useless single entry). Diff key: <code>host_mode_option_id</code>. The B26 catalog is 37 options, identical across same-model arrays.
+  </div>
+</section>
+
+<section id="journals">
+  <h2 class="sec"><span class="num">04</span> Journals</h2>
+  <p>Journal volumes (Universal Replicator async replication) come from <code>hv_journal_facts</code>. The task mirrors the other REST gathers. On the static sims there are none configured, so the module returns <code>{ journal_volume: null }</code>.</p>
+  <div class="box info">
+    <div class="h">Empty is correct, not a bug</div>
+    <code>journal_volume: null</code> means no journals exist &mdash; expected on the sims. The loader must turn <code>null</code> into an empty list so it renders as a clean empty tab rather than crashing or emitting a stray row. On a real array with UR configured, journals populate normally; verify the diff key (<code>journalId</code> is a reasonable guess) against real output then, since the sims can't confirm it.
+  </div>
+  <p class="note">Use the <code>hv_journal_facts</code> module &mdash; not the deprecated <code>hv_journal_volume_facts</code>, which is removed in collection 5.0.0.</p>
+</section>
+
+<section id="loader">
+  <h2 class="sec"><span class="num">05</span> Two loaders, two fixes</h2>
+  <p>The critical structural lesson: <code>facts_to_xlsx.py</code> and <code>facts_to_csv.py</code> each have their <strong>own independent <code>load_raw</code></strong>. Every loader change must be applied to <em>both</em>, or one output silently diverges from the other.</p>
+  <h3>Register the new types (both scripts)</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>both scripts</span><span>python</span></div>
+  <pre><span class="v">FACT_TYPES</span> = [<span class="s">"system"</span>, <span class="s">"parity_groups"</span>, <span class="s">"ports"</span>, <span class="s">"pools"</span>, <span class="s">"ldevs"</span>,
+              <span class="s">"host_groups"</span>, <span class="s">"host_mode_options"</span>, <span class="s">"journals"</span>, <span class="s">"licenses"</span>]</pre></div>
+  <h3>The loader normalisation (both scripts)</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>load_raw(), per fact type</span><span>python</span></div>
+  <pre>serial = str(item.get(<span class="s">"item"</span>, {}).get(<span class="s">"serial"</span>) <span class="k">or</span> item.get(<span class="s">"serial"</span>, <span class="s">"unknown"</span>))
+payload = extract_payload(item.get(<span class="s">"ansible_facts"</span>, {}))
+<span class="k">if</span> ft == <span class="s">"host_mode_options"</span> <span class="k">and</span> isinstance(payload, dict):
+    payload = payload.get(<span class="s">"host_mode_options"</span>, [])   <span class="c"># unwrap nested</span>
+<span class="k">if</span> ft == <span class="s">"journals"</span>:
+    payload = payload <span class="k">or</span> []                          <span class="c"># null -> []</span>
+<span class="k">if</span> payload <span class="k">is</span> <span class="k">None</span>:
+    payload = []</pre></div>
+  <h3>KEY_FIELDS (xlsx diff)</h3>
+  <div class="code"><div class="bar"><span><span class="dot"></span>facts_to_xlsx.py</span><span>python</span></div>
+  <pre><span class="s">"host_mode_options"</span>: [<span class="s">"host_mode_option_id"</span>],   <span class="c"># confirmed</span>
+<span class="s">"journals"</span>:          [<span class="s">"journalId"</span>],             <span class="c"># guess (no journals on sims)</span>
+<span class="s">"licenses"</span>:          [<span class="s">"PRO_ID"</span>],               <span class="c"># confirmed</span></pre></div>
+</section>
+
+<section id="gotchas">
+  <h2 class="sec"><span class="num">06</span> Gotchas we hit</h2>
+  <p>Recorded so they don't have to be rediscovered. Each cost real time.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td><code>EX_ATTHOR</code> on license gather</td><td>HORCM not attached / not logged in</td><td><code>horcmstart</code> + the script's own <code>raidcom -login</code></td></tr>
+        <tr><td>License tab empty; serial <code>unknown</code></td><td>raidcom scripts put serial at top level; REST nests it under <code>item</code></td><td>loader: <code>item.get("item",{}).get("serial") or item.get("serial")</code></td></tr>
+        <tr><td>HMO tab tiny (dict, not list)</td><td>module nests list under <code>host_modes</code></td><td>unwrap <code>host_modes.host_mode_options</code></td></tr>
+        <tr><td>Journal tab crashes / stray rows</td><td><code>journal_volume: null</code></td><td>normalise <code>None</code> to <code>[]</code></td></tr>
+        <tr><td>CSV missing the 3 new files</td><td>second independent <code>load_raw</code> + <code>FACT_TYPES</code></td><td>apply every loader fix to <em>both</em> scripts</td></tr>
+        <tr><td><code>__pycache__/*.pyc</code> committed</td><td>not gitignored; lint is advisory not enforced</td><td><code>git rm -r --cached</code> + <code>.gitignore</code> guard</td></tr>
+        <tr><td>yamllint trailing-spaces in 08</td><td>whitespace from spliced tasks</td><td><code>sed -i 's/[[:space:]]*$//'</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box crit">
+    <div class="h">The meta-lesson</div>
+    Two scripts with independent <code>load_raw</code> functions means every data-shape fix is a <strong>two-place edit</strong>. The long-term fix is to factor the shared loader into one module both import &mdash; until then, treat "fixed in xlsx" as only half done.
+  </div>
+</section>
+
+<section id="harden">
+  <h2 class="sec"><span class="num">07</span> Hardening: harden-lab.sh</h2>
+  <p>One command applies baseline protection: tamper-detection, read-only locking, secret guards, and an SSH audit. It is idempotent, reversible, and reports rather than silently locking you out.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Mode</th><th>Does</th></tr></thead>
+      <tbody>
+        <tr><td class="mono-cell">(none)</td><td>apply: install verify script, baseline, daily cron, lock dirs, gitignore guards, SSH audit</td></tr>
+        <tr><td class="mono-cell">--status</td><td>dashboard: lock state, baseline age, tamper result, cron presence</td></tr>
+        <tr><td class="mono-cell">--check</td><td>run the tamper check (what changed since baseline)</td></tr>
+        <tr><td class="mono-cell">--unlock</td><td>make code writable to edit</td></tr>
+        <tr><td class="mono-cell">--lock</td><td>re-lock + refresh baseline</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box warn">
+    <div class="h">Read permission BITS, not -w (the root trap)</div>
+    Lock-state detection must read <code>stat -c '%A'</code> bits, not <code>[ -w ]</code> &mdash; root bypasses the write bit, so <code>-w</code> reports a locked dir as writable. This subtlety is why <code>--status</code> uses stat.
+  </div>
+  <div class="box info">
+    <div class="h">Prevent / detect / recover</div>
+    Read-only locking <em>prevents</em> accidental edits (a deliberate-change speed bump, not absolute &mdash; root can override). The checksum baseline <em>detects</em> any change, even one that bypasses Git. Git <em>recovers</em>. The three layers stack; no single one is the whole defence. Relationship to Document 7: that doc covers team RBAC; this script is the single-machine implementation.
+  </div>
+</section>
+
+<section id="workflow">
+  <h2 class="sec"><span class="num">08</span> Edit-while-locked workflow</h2>
+  <p>Once hardening is applied, the directories are read-only, so editing follows a rhythm that keeps the baseline honest:</p>
+  <div class="step"><div class="n">1</div><div class="body"><h4>UNLOCK</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+    <pre><span class="k">bash</span> scripts/harden-lab.sh --unlock</pre></div></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><h4>EDIT + COMMIT</h4>
+    <p>Make changes, run the lint check, commit and push. Watch for the gotchas in &sect;06 &mdash; strip trailing whitespace, keep <code>__pycache__</code> out of Git.</p></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><h4>RE-LOCK + RE-BASELINE</h4>
+    <div class="code"><div class="bar"><span><span class="dot"></span>mgmt node</span><span>root</span></div>
+    <pre><span class="k">bash</span> scripts/harden-lab.sh --lock      <span class="c"># re-locks AND refreshes baseline</span>
+<span class="k">bash</span> scripts/harden-lab.sh --status    <span class="c"># confirm clean</span></pre></div>
+    <p class="note">Re-locking refreshes the baseline so your committed change becomes the new known-good &mdash; skip it and the daily check flags your own edit.</p></div></div>
+  <div class="box info">
+    <div class="h">Checkpoint order</div>
+    The full session checkpoint: verify export &rarr; <code>--unlock</code> &rarr; gitignore secret guards + <code>git status</code> review &rarr; lint &rarr; commit &rarr; push &rarr; <code>--lock</code> &rarr; shutdown &rarr; VM snapshot. Hardening runs effectively last because it locks the very directories Git tracks.
+  </div>
+</section>
+
+<footer>
+  <span>HitachiVantara &middot; Storage Automation &middot; Facts Extensions &amp; Hardening v1</span>
+  <span>Document 9 &middot; Extensions</span>
+</footer>
+</div>
+</body>
+</html>

@@ -150,7 +150,7 @@
 <header class="masthead">
   <div class="doc-tag">
     <div>Installation Guide</div>
-    <div class="cur">▸ DOCUMENT 2 of 3</div>
+    <div class="cur">▸ DOCUMENT 2</div>
     <div>Troubleshooting Guide</div>
     <div>VSP Simulator Guide</div>
   </div>
@@ -644,11 +644,56 @@ PREV_ARG=<span class="s">""</span>
       <p>The VirtualBox shared folder isn't mounted. The script guards this and leaves outputs in <code>exports/</code>. Re-mount the share (or check the Guest Additions build — kernel headers via <code>kernel-devel-$(uname -r)</code>) and re-run, or copy from <code>exports/</code> manually.</p>
     </div>
   </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag cci">F-5</span><span class="t">raidcom: [EX_ATTHOR] Can't be attached to HORC manager</span></div>
+    <div class="ibody">
+      <div class="sym">license (or WWN) gather fails with EX_ATTHOR</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>The raidcom gather needs a <strong>running HORCM instance</strong> for that array and an authenticated session. Start HORCM first (<code>horcmstart.sh 1001 1004 1005 1006</code>), and the gather scripts perform their own <code>raidcom -login</code> with the vault credentials. The production wrapper starts/stops HORCM with a trap; the lab wrapper assumes instances are already up. Test a bare <code>raidcom get license -I1001</code> after login to confirm before blaming the script.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">F-6</span><span class="t">License/raidcom tab empty; serial shows "unknown"</span></div>
+    <div class="ibody">
+      <div class="sym">licenses gathered fine but don't attach to any array; an "unknown" array appears</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>REST fact modules nest the serial under <code>item.serial</code> (the Ansible loop var); the raidcom collector scripts write it at the <strong>top level</strong>. A loader reading only <code>item["item"]["serial"]</code> files raidcom data under "unknown". Fix the serial line in <strong>both</strong> loaders: <code>item.get("item",{}).get("serial") or item.get("serial","unknown")</code>.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag cci">F-7</span><span class="t">Host-mode-options tab tiny; journals tab crashes</span></div>
+    <div class="ibody">
+      <div class="sym">HMO shows a handful of rows (a dict, not 37×N); journals errors or emits stray rows</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p>Two shape quirks. <code>hv_supported_host_mode_facts</code> nests the list under <code>host_modes.host_mode_options</code> — the loader must unwrap it or it stores the wrapper dict. <code>hv_journal_facts</code> returns <code>journal_volume: null</code> when none exist — normalise <code>None</code> to <code>[]</code>. Apply both in <strong>each</strong> loader.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag net">F-8</span><span class="t">CSV output missing fact types the workbook has</span></div>
+    <div class="ibody">
+      <div class="sym">xlsx has the new tabs but the matching CSVs are absent</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p><code>facts_to_xlsx.py</code> and <code>facts_to_csv.py</code> have <strong>independent</strong> <code>FACT_TYPES</code> lists and <code>load_raw</code> functions. Every registration and every loader fix must be applied to <em>both</em>. "Fixed in xlsx" is only half done. The durable fix is to factor the shared loader into one module both import.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="ihead"><span class="tag boot">F-9</span><span class="t">__pycache__ / trailing-space lint failures slip into a commit</span></div>
+    <div class="ibody">
+      <div class="sym">lint reports trailing-spaces; .pyc files appear in git status / a push</div>
+      <div class="fix-h">Cause &amp; fix</div>
+      <p><code>lint-check.sh</code> is advisory, not an enforced gate — a commit proceeds even when it fails. Strip trailing spaces (<code>sed -i 's/[[:space:]]*$//' file</code>), untrack caches (<code>git rm -r --cached scripts/__pycache__</code>), and add <code>__pycache__/</code>, <code>*.pyc</code>, <code>*.bak</code> to <code>.gitignore</code>. To make lint blocking, wire it as a required CI status check (Document 7).</p>
+    </div>
+  </div>
 </section>
 
 <footer>
   <span>HitachiVantara · VSP One B26 Simulator Lab · Troubleshooting Guide v4</span>
-  <span>Document 2 of 3 · Rocky Linux 9.7</span>
+  <span>Document 2 · Rocky Linux 9.7</span>
 </footer>
 
 </div>
