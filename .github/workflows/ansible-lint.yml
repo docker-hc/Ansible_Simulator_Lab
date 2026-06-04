@@ -56,14 +56,11 @@ jobs:
           fi
 
       - name: Run lint gate
+        env:
+          ANSIBLE_VAULT_PASSWORD_FILE: ${{ runner.temp }}/vault_pass
         run: |
+          trap 'rm -f "$ANSIBLE_VAULT_PASSWORD_FILE"' EXIT
+          printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > "$ANSIBLE_VAULT_PASSWORD_FILE"
+          chmod 600 "$ANSIBLE_VAULT_PASSWORD_FILE"
           chmod +x scripts/lint-check.sh
           ./scripts/lint-check.sh
-          # IMPORTANT: this step (and therefore the merge gate) only fails when
-          # lint-check.sh exits non-zero. If "advisory" means the script always
-          # exits 0 and merely prints warnings, the gate will never bite. Verify:
-          #     ./scripts/lint-check.sh; echo "exit=$?"
-          # against a deliberately-broken playbook. If it exits 0, give the script
-          # a strict mode (e.g. honor a LINT_STRICT=1 env var that makes it return
-          # ansible-lint's real exit code) and set that env here. Paste the script
-          # and I'll wire it precisely.
