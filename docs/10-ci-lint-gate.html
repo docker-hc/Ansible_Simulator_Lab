@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doc 10 — CI Lint Gate &amp; Branch Enforcement</title>
+<style>
+  :root{
+    --ink:#1b1d27;
+    --muted:#5b6072;
+    --bg:#f7f6f2;
+    --card:#ffffff;
+    --rule:#e4e2da;
+    --accent:#3949ab;        /* indigo — the Doc 10 key colour */
+    --accent-soft:#e8eaf6;
+    --accent-deep:#283593;
+    --code-bg:#1d2030;
+    --code-ink:#e9ecf5;
+    --warn:#b4690e;
+    --warn-soft:#fbf0dd;
+    --good:#1f7a4d;
+    --good-soft:#e3f3ea;
+    --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Mono",Consolas,monospace;
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);line-height:1.6;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px 96px}
+
+  /* Masthead */
+  header.doc{
+    border-top:6px solid var(--accent);
+    background:linear-gradient(180deg,#fff, #fbfaf7);
+    padding:40px 0 28px;margin-bottom:8px;
+    border-bottom:1px solid var(--rule);
+  }
+  .doc .wrap{padding-bottom:0}
+  .badge{
+    display:inline-flex;align-items:baseline;gap:10px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent-deep);
+    background:var(--accent-soft);border:1px solid #c5cae9;
+    padding:6px 12px;border-radius:999px;
+  }
+  .badge b{font-size:13px}
+  h1{
+    font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.12;
+    margin:18px 0 8px;letter-spacing:-.01em;
+  }
+  .subtitle{color:var(--muted);font-size:17px;max-width:60ch;margin:0}
+  .meta{margin-top:18px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .meta span{color:var(--ink)}
+
+  /* TOC */
+  nav.toc{
+    background:var(--card);border:1px solid var(--rule);border-radius:12px;
+    padding:18px 22px;margin:28px 0;
+  }
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 10px;font-family:var(--mono)}
+  nav.toc ol{margin:0;padding-left:22px;columns:2;column-gap:32px}
+  nav.toc li{margin:4px 0}
+  nav.toc a{color:var(--accent-deep);text-decoration:none}
+  nav.toc a:hover{text-decoration:underline}
+
+  section{margin:40px 0}
+  h2.sec{
+    font-family:var(--serif);font-size:26px;font-weight:600;
+    margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent-soft);
+    letter-spacing:-.01em;
+  }
+  h2.sec .n{font-family:var(--mono);font-size:15px;color:var(--accent);
+    margin-right:12px;vertical-align:2px}
+  h3{font-size:18px;margin:26px 0 8px}
+  p{margin:12px 0}
+  strong{font-weight:650}
+
+  /* Code */
+  pre{
+    background:var(--code-bg);color:var(--code-ink);border-radius:10px;
+    padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;
+    line-height:1.55;margin:14px 0;border:1px solid #2b2f44;
+  }
+  code{font-family:var(--mono);font-size:.9em;background:#edece6;
+    padding:.12em .4em;border-radius:4px;color:#33384a}
+  pre code{background:none;padding:0;color:inherit;font-size:inherit}
+  .cmt{color:#8a90ad}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    border-bottom:2px solid var(--rule)}
+  td code{font-size:.86em}
+
+  /* Callouts */
+  .box{border-radius:10px;padding:14px 18px;margin:16px 0;border:1px solid}
+  .box p{margin:6px 0}
+  .box .lab{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;
+    text-transform:uppercase;display:block;margin-bottom:4px;font-weight:600}
+  .box.lesson{background:var(--warn-soft);border-color:#ecd3a6}
+  .box.lesson .lab{color:var(--warn)}
+  .box.note{background:var(--accent-soft);border-color:#c5cae9}
+  .box.note .lab{color:var(--accent-deep)}
+  .box.ok{background:var(--good-soft);border-color:#bfe3cd}
+  .box.ok .lab{color:var(--good)}
+
+  .flow{counter-reset:step;list-style:none;padding:0;margin:16px 0}
+  .flow li{position:relative;padding:10px 0 10px 46px;border-bottom:1px dashed var(--rule)}
+  .flow li:last-child{border-bottom:0}
+  .flow li::before{
+    counter-increment:step;content:counter(step);
+    position:absolute;left:0;top:9px;width:30px;height:30px;border-radius:50%;
+    background:var(--accent);color:#fff;font-family:var(--mono);font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--rule);
+    color:var(--muted);font-size:13px;font-family:var(--mono)}
+  a.permalink{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <div class="wrap">
+    <div class="badge"><b>Doc 10</b> · CI &amp; Enforcement · Indigo</div>
+    <h1>CI Lint Gate &amp; Branch Enforcement</h1>
+    <p class="subtitle">How the advisory <code>lint-check.sh</code> became a required, vault-aware status check that blocks broken code from reaching <code>main</code> — and how to operate, rotate, and troubleshoot it.</p>
+    <p class="meta">Repo <span>docker-hc/Ansible_Simulator_Lab</span> &nbsp;·&nbsp; Ruleset <span>main-lint-gate</span> &nbsp;·&nbsp; Companion to Doc 7 (Access Control) &amp; Doc 9 (Hardening)</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#why">Why this exists</a></li>
+      <li><a href="#where">Where the pieces live</a></li>
+      <li><a href="#flow">How a change flows</a></li>
+      <li><a href="#do">What to do — operating</a></li>
+      <li><a href="#trouble">Troubleshooting &amp; lessons</a></li>
+      <li><a href="#verify">Verifying it's live</a></li>
+      <li><a href="#cmd">Command reference</a></li>
+    </ol>
+  </nav>
+
+  <section id="why">
+    <h2 class="sec"><span class="n">01</span>Why this exists</h2>
+    <p><code>scripts/lint-check.sh</code> has always returned a non-zero exit code when a check fails — but nothing <em>enforced</em> that. It was run by hand at checkpoint time, so a tired push could still land un-linted YAML, a broken playbook, or a shellcheck violation on <code>main</code>. "Advisory" meant the script was honest; it just had no teeth.</p>
+    <p>This work gives it teeth: <code>lint-check.sh</code> now runs in GitHub Actions on every push and pull request, and a repository ruleset makes that run a <strong>required status check</strong> on <code>main</code>. Code that fails the gate cannot be merged. The gate covers all seven checks — <code>yamllint</code>, <code>ansible-lint</code>, <code>ansible --syntax-check</code>, <code>ansible-inventory --graph</code>, vault-encrypted, vault-pass-not-tracked, and <code>shellcheck</code>.</p>
+    <p>A sibling task confirmed commit hygiene (no tracked <code>__pycache__</code>/<code>*.pyc</code>, no trailing whitespace in <code>08-export-facts.yml</code>, all <code>.gitignore</code> guards present) via <code>scripts/verify-commit-hygiene.sh</code>, which is built to slot into CI later as a second gate.</p>
+  </section>
+
+  <section id="where">
+    <h2 class="sec"><span class="n">02</span>Where the pieces live</h2>
+    <table>
+      <thead><tr><th>Artifact</th><th>Location</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>ansible-lint.yml</code></td><td><code>.github/workflows/</code></td><td>CI workflow. Sets up Python 3.11, installs the pinned toolchain, installs the collection from <code>requirements.yml</code>, then runs <code>lint-check.sh</code>. The job name <code>ansible-lint</code> <em>is</em> the status-check context.</td></tr>
+        <tr><td><code>lint-check.sh</code></td><td><code>scripts/</code></td><td>The canonical 7-check gate. Now resolves its own repo root via <code>BASH_SOURCE</code>, so it runs identically on the mgmt node, prod, and a CI checkout.</td></tr>
+        <tr><td><code>setup-branch-gate.sh</code></td><td><code>scripts/</code></td><td>One-time creator of the <code>main-lint-gate</code> ruleset via <code>gh api</code>.</td></tr>
+        <tr><td><code>verify-commit-hygiene.sh</code></td><td><code>scripts/</code></td><td>Standalone hygiene checker (pycache, trailing whitespace, gitignore guards, tracked-secret scan).</td></tr>
+        <tr><td><code>ANSIBLE_VAULT_PASSWORD</code></td><td>GitHub → repo secret</td><td>The vault password, encrypted at rest in GitHub. The only place the password lives outside the mgmt node's <code>/root/.vault_pass</code>.</td></tr>
+        <tr><td><code>main-lint-gate</code></td><td>GitHub → ruleset</td><td>Active branch ruleset on <code>main</code>: requires the <code>ansible-lint</code> check, requires a PR (0 approvals), blocks deletion &amp; force-push. No bypass actors.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pinned toolchain (keep CI == desk)</h3>
+    <p>The workflow pins the exact versions the mgmt node runs, so CI green/red matches local:</p>
+<pre><code>ansible-core   == 2.16.18
+ansible-lint   == 26.4.0
+ansible-compat == 26.3.0
+yamllint       (latest)        <span class="cmt"># required by lint-check.sh</span>
+shellcheck     (runner-provided)</code></pre>
+    <div class="box note"><span class="lab">Pin discipline</span>
+      <p>When you bump <code>ansible-lint</code> on the mgmt node, update the pin in <code>ansible-lint.yml</code> (and re-pin <code>ansible-compat</code>) in the same change — otherwise CI silently drifts from your desk. <code>pip</code> will error loudly if the two ever conflict, which is the behaviour you want.</p>
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2 class="sec"><span class="n">03</span>How a change flows</h2>
+    <p>The vault is the subtle part. Three of the seven checks have to <em>decrypt</em> <code>group_vars/vault.yml</code> just to parse the playbooks, so CI needs the key — which it gets from the secret, not from the gitignored <code>/root/.vault_pass</code> (absent on the runner).</p>
+    <ol class="flow">
+      <li>You open a PR into <code>main</code> (direct pushes are blocked by the ruleset).</li>
+      <li>The workflow triggers; it installs the pinned toolchain and the collection.</li>
+      <li>The <em>Run lint gate</em> step writes the <code>ANSIBLE_VAULT_PASSWORD</code> secret to a temp file and sets <code>ANSIBLE_VAULT_PASSWORD_FILE</code> to its path.</li>
+      <li>That env var overrides the <code>vault_password_file = /root/.vault_pass</code> line in <code>ansible.cfg</code> (env beats the ini) — and propagates into the <code>ansible-playbook --syntax-check</code> subprocesses that <code>ansible-lint</code> spawns.</li>
+      <li><code>lint-check.sh</code> runs all 7 checks; the temp file is wiped by a <code>trap</code> on exit.</li>
+      <li>If any check fails, the job exits non-zero → the required check goes red → the PR can't merge.</li>
+    </ol>
+    <div class="box note"><span class="lab">Why the env var, not a file</span>
+      <p><code>ANSIBLE_VAULT_PASSWORD_FILE</code> names a <em>path to a file containing the password</em>. CI writes that file at runtime from the secret; the YAML never contains the password itself. PRs from the repo receive the secret, so the vault checks pass on PRs. (Fork PRs do not receive secrets — irrelevant for a solo/private repo, but worth knowing if you ever accept external contributions.)</p>
+    </div>
+  </section>
+
+  <section id="do">
+    <h2 class="sec"><span class="n">04</span>What to do — operating</h2>
+
+    <h3>Everyday change (the new flow)</h3>
+    <p>Because <code>main</code> is now PR-only, "commit and push to main" is replaced by:</p>
+<pre><code>git checkout -b my-change
+<span class="cmt"># only if editing playbooks/scripts/roles (Doc 9 lock):</span>
+sudo ./scripts/harden-lab.sh --unlock
+<span class="cmt"># ...edit...</span>
+git add . &amp;&amp; git commit -m "..."
+git push -u origin my-change
+gh pr create --fill
+<span class="cmt"># ansible-lint runs on the PR; once green:</span>
+gh pr merge --squash
+sudo ./scripts/harden-lab.sh --lock      <span class="cmt"># re-baseline if you unlocked</span></code></pre>
+
+    <div class="box note"><span class="lab">Branching · create vs. rename</span>
+      <p>Two commands that look alike but aren't:</p>
+      <p><code>git checkout -b &lt;name&gt;</code> <strong>creates</strong> a new branch and switches to it — how you start a change.<br>
+      <code>git branch -m &lt;name&gt;</code> <strong>renames</strong> the branch you're already on, in place. It does <em>not</em> create a branch, so you don't follow it with another <code>checkout -b</code> — that would just make a redundant third branch.</p>
+      <p>After a rename, <code>git branch --show-current</code> confirms where you are. Name branches after the change (<code>docs/ci-lint-gate</code>), not the repo — a branch named like the repo is confusing in the PR list.</p>
+    </div>
+
+    <h3>Rotate the vault password</h3>
+    <p>Change it in <strong>both</strong> places or CI will fail to decrypt:</p>
+<pre><code><span class="cmt"># 1. on the mgmt node, update the file ansible.cfg points at</span>
+<span class="cmt"># 2. re-set the GitHub secret (interactive prompt avoids shell history):</span>
+gh secret set ANSIBLE_VAULT_PASSWORD --repo docker-hc/Ansible_Simulator_Lab</code></pre>
+
+    <h3>Emergency bypass</h3>
+    <p>The ruleset currently allows <em>no</em> bypass (<code>current_user_can_bypass: never</code>) — even the owner goes through PRs. If you need a break-glass path, add the Repository-admin role to the bypass list: <em>Settings → Rules → Rulesets → main-lint-gate → Bypass list</em>.</p>
+
+    <h3>Pending maintenance</h3>
+    <div class="box lesson"><span class="lab">Node 20 deprecation</span>
+      <p>CI annotates that <code>actions/checkout@v4</code> and <code>actions/setup-python@v5</code> run on Node 20, which GitHub is forcing to Node 24 by default from <strong>16 Jun 2026</strong>. Non-blocking, but bump them to current major versions in <code>ansible-lint.yml</code> before then to silence it.</p>
+    </div>
+  </section>
+
+  <section id="trouble">
+    <h2 class="sec"><span class="n">05</span>Troubleshooting &amp; lessons</h2>
+    <p>Each of these actually happened while standing the gate up. They're the failure modes most likely to recur.</p>
+
+    <div class="box lesson"><span class="lab">Symptom · cd: /etc/ansible/Ansible_Simulator_Lab: No such file or directory</span>
+      <p><strong>Cause:</strong> <code>lint-check.sh</code> hardcoded an absolute lab path; the runner checks the repo out elsewhere.<br>
+      <strong>Fix &amp; lesson:</strong> resolve the repo root dynamically — <code>LAB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &amp;&amp; pwd)"</code>. Any script that runs in CI must not assume a lab-specific path.</p>
+    </div>
+
+    <div class="box lesson"><span class="lab">Symptom · SC2034 LAB appears unused</span>
+      <p><strong>Cause:</strong> the dynamic-root edit left the old <code>LAB=</code> assignment orphaned; the gate's own <code>shellcheck</code> step caught it.<br>
+      <strong>Fix &amp; lesson:</strong> keep <code>LAB</code> both assigned and read (<code>cd "$LAB"</code>). The shellcheck check polices <code>lint-check.sh</code> itself — the gate guards its own gatekeeper.</p>
+    </div>
+
+    <div class="box lesson"><span class="lab">Symptom · ERROR! The vault password file /root/.vault_pass was not found</span>
+      <p><strong>Cause:</strong> three checks decrypt <code>group_vars/vault.yml</code>; the runner has no vault file.<br>
+      <strong>Fix &amp; lesson:</strong> supply the password through a GitHub secret + <code>ANSIBLE_VAULT_PASSWORD_FILE</code> env override (see §03). Any check that decrypts needs the key present in CI; checks that only inspect the file (vault-encrypted header, vault-pass-not-tracked) do not.</p>
+    </div>
+
+    <div class="box lesson"><span class="lab">Symptom · HTTP 422: Secret names can only contain… (on gh secret set)</span>
+      <p><strong>Cause:</strong> the <code>gh secret set NAME &lt; file</code> stdin-redirect form tripped a name-parse quirk.<br>
+      <strong>Fix:</strong> use the interactive prompt (<code>gh secret set NAME</code>, paste at the hidden prompt) or <code>--body "$(cat file)"</code>. The prompt also keeps the password out of shell history.</p>
+    </div>
+
+    <div class="box note"><span class="lab">Design note · why a required check needs a PR rule</span>
+      <p>Required status checks only gate <em>merges via pull request</em>. A direct push to <code>main</code> would run the check but wouldn't be blocked by it. That's why the ruleset also requires a PR (with 0 approvals): it forces every change through the one path where the check can act as a gate.</p>
+    </div>
+  </section>
+
+  <section id="verify">
+    <h2 class="sec"><span class="n">06</span>Verifying it's live</h2>
+<pre><code><span class="cmt"># ruleset present and active</span>
+gh api repos/docker-hc/Ansible_Simulator_Lab/rulesets --jq '.[].name'
+<span class="cmt"># -> main-lint-gate</span>
+
+<span class="cmt"># latest CI run status</span>
+gh run list --workflow=ansible-lint.yml --limit 3
+<span class="cmt"># -> top row: completed / success</span>
+
+<span class="cmt"># commit hygiene (item 3) on demand</span>
+./scripts/verify-commit-hygiene.sh
+<span class="cmt"># -> ALL CHECKS PASSED</span></code></pre>
+    <div class="box ok"><span class="lab">Done state</span>
+      <p>Item 3 verified clean. Item 2 live: <code>lint-check.sh</code> is a required check on <code>main</code>, vault-aware in CI, and <code>lint-check.sh</code> itself is now path-portable for the prod host. The drawer is locked and the only key is the GitHub secret.</p>
+    </div>
+  </section>
+
+  <section id="cmd">
+    <h2 class="sec"><span class="n">07</span>Command reference</h2>
+    <p>Every command used to build and operate the gate, grouped by task — what each does and when you reach for it.</p>
+
+    <h3>Branches &amp; pull requests</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does / when</th></tr></thead>
+      <tbody>
+        <tr><td><code>git branch --show-current</code></td><td>Prints the branch you're on. Sanity-check this before you commit.</td></tr>
+        <tr><td><code>git checkout -b &lt;name&gt;</code></td><td><strong>Creates</strong> a new branch off the current one and switches to it. Start every change this way.</td></tr>
+        <tr><td><code>git branch -m &lt;name&gt;</code></td><td><strong>Renames</strong> the branch you're already on, in place. Does <em>not</em> create a new branch — so it isn't followed by another <code>checkout -b</code>.</td></tr>
+        <tr><td><code>git switch &lt;name&gt;</code></td><td>Switches to an <em>existing</em> branch (e.g. <code>git switch main</code>).</td></tr>
+        <tr><td><code>git push -u origin &lt;name&gt;</code></td><td>Pushes the branch and sets it to track <code>origin</code>. The <code>-u</code> is only needed on the first push; afterwards just <code>git push</code>.</td></tr>
+        <tr><td><code>gh pr create --fill</code></td><td>Opens a PR, using your commit message as the title/body.</td></tr>
+        <tr><td><code>gh pr checks</code></td><td>Shows the status of the PR's checks — i.e. whether <code>ansible-lint</code> is green yet.</td></tr>
+        <tr><td><code>gh pr merge --squash</code></td><td>Merges the PR as one squashed commit, once the required check passes.</td></tr>
+        <tr><td><code>git switch main &amp;&amp; git pull</code></td><td>After the merge, return to <code>main</code> and pull the merged change.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Running &amp; watching the gate</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does / when</th></tr></thead>
+      <tbody>
+        <tr><td><code>./scripts/lint-check.sh</code></td><td>Runs all 7 checks locally (uses <code>/root/.vault_pass</code>). Your pre-push sanity check.</td></tr>
+        <tr><td><code>gh run list --workflow=ansible-lint.yml --limit 3</code></td><td>Lists recent CI runs with pass/fail status.</td></tr>
+        <tr><td><code>gh run watch</code></td><td>Follows the latest (or a selected) run live until it finishes.</td></tr>
+        <tr><td><code>gh run view &lt;id&gt; --log-failed</code></td><td>Shows only the failed step's log. First stop whenever CI goes red.</td></tr>
+        <tr><td><code>./scripts/verify-commit-hygiene.sh</code></td><td>Runs the item-3 hygiene checks (pycache, trailing whitespace, gitignore guards, tracked secrets) on demand.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Secret &amp; ruleset</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does / when</th></tr></thead>
+      <tbody>
+        <tr><td><code>gh secret set ANSIBLE_VAULT_PASSWORD --repo &lt;owner/repo&gt;</code></td><td>Creates or updates the vault-password secret. Paste at the hidden prompt to keep it out of shell history.</td></tr>
+        <tr><td><code>gh secret list --repo &lt;owner/repo&gt;</code></td><td>Lists secret <em>names</em> (never values) — confirms the secret exists.</td></tr>
+        <tr><td><code>bash scripts/setup-branch-gate.sh</code></td><td>Creates the <code>main-lint-gate</code> ruleset. One-time — re-running POSTs a duplicate.</td></tr>
+        <tr><td><code>gh api repos/&lt;owner/repo&gt;/rulesets --jq '.[].name'</code></td><td>Lists active rulesets — confirms the gate is in place.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Hardening lock rhythm (Doc 9)</h3>
+    <table>
+      <thead><tr><th>Command</th><th>What it does / when</th></tr></thead>
+      <tbody>
+        <tr><td><code>sudo ./scripts/harden-lab.sh --unlock</code></td><td>Makes <code>playbooks/scripts/roles</code> writable. Run before editing any of them.</td></tr>
+        <tr><td><code>sudo ./scripts/harden-lab.sh --lock</code></td><td>Re-locks read-only and re-baselines checksums. Run <em>last</em> in a checkpoint.</td></tr>
+        <tr><td><code>sudo ./scripts/harden-lab.sh --status</code></td><td>Shows the current lock state.</td></tr>
+        <tr><td><code>sudo ./scripts/harden-lab.sh --check</code></td><td>Verifies files against the checksum baseline.</td></tr>
+      </tbody>
+    </table>
+    <div class="box note"><span class="lab">Note · docs/ is not locked</span>
+      <p>Adding HTML to <code>docs/</code> needs no unlock — only <code>playbooks</code>, <code>scripts</code>, and <code>roles</code> are in the lock set. Editing any of the gate's <em>scripts</em>, though, follows the unlock → edit → commit → lock rhythm.</p>
+    </div>
+  </section>
+
+  <footer>
+    Doc 10 · CI Lint Gate &amp; Branch Enforcement · Hitachi VSP One B26 Lab ·
+    add to <code>install-lab-docs.sh</code> alongside Docs 1–9.
+  </footer>
+
+</div>
+</body>
+</html>
