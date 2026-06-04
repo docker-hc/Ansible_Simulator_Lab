@@ -5,8 +5,8 @@
 # Usage: bash scripts/lint-check.sh
 # ============================================================
 
-LAB=/etc/ansible/Ansible_Simulator_Lab
-cd $LAB || exit
+LAB="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$LAB" || exit 1
 
 PASS=0
 FAIL=0
