@@ -1,0 +1,69 @@
+# Goes in: .github/workflows/ansible-lint.yml
+# Purpose: run scripts/lint-check.sh in CI so it can become a REQUIRED status
+#          check on main (paired with the ruleset created by setup-branch-gate.sh).
+name: ansible-lint
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  merge_group:        # keeps the check reporting if you ever adopt a merge queue
+  workflow_dispatch:  # lets you trigger a run by hand from the Actions tab
+
+permissions:
+  contents: read      # least privilege; lint needs nothing more
+
+concurrency:          # supersede stale runs on the same ref, save minutes
+  group: ansible-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ansible-lint:                       # <-- THIS job name is the status-check "context".
+    runs-on: ubuntu-latest            #     Keep it unique across all workflows, or the
+    steps:                            #     required-check match goes ambiguous.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"      # matches python3.11 on rocky9-ansible-mgmt
+
+      - name: Install Ansible + lint tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install "ansible-core==2.16.18"
+          pip install yamllint          # lint-check.sh runs yamllint
+          # PIN THIS to whatever `ansible-lint --version` prints on the mgmt node.
+          # If CI runs a different ansible-lint than you run locally, the gate will
+          # green/red differently than your desk and you'll lose trust in it.
+          pip install "ansible-lint==26.4.0" "ansible-compat==26.3.0"
+          # shellcheck ships preinstalled on the ubuntu-latest runner; confirm/pin
+          # if lint-check.sh assumes a specific version. (syntax-check, inventory
+          # graph, vault-encrypted and vault_pass-tracking checks need nothing
+          # beyond ansible-core + git, both already present.)
+          shellcheck --version
+
+      - name: Install required collection(s)
+        run: |
+          if [ -f collections/requirements.yml ]; then
+            ansible-galaxy collection install -r collections/requirements.yml
+          elif [ -f requirements.yml ]; then
+            ansible-galaxy collection install -r requirements.yml
+          else
+            ansible-galaxy collection install hitachivantara.vspone_block:4.8.1
+          fi
+
+      - name: Run lint gate
+        run: |
+          chmod +x scripts/lint-check.sh
+          ./scripts/lint-check.sh
+          # IMPORTANT: this step (and therefore the merge gate) only fails when
+          # lint-check.sh exits non-zero. If "advisory" means the script always
+          # exits 0 and merely prints warnings, the gate will never bite. Verify:
+          #     ./scripts/lint-check.sh; echo "exit=$?"
+          # against a deliberately-broken playbook. If it exits 0, give the script
+          # a strict mode (e.g. honor a LINT_STRICT=1 env var that makes it return
+          # ansible-lint's real exit code) and set that env here. Paste the script
+          # and I'll wire it precisely.
