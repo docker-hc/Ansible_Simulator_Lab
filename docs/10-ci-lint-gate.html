@@ -223,6 +223,12 @@ sudo ./scripts/harden-lab.sh --lock      <span class="cmt"># re-baseline if you 
       <p>After a rename, <code>git branch --show-current</code> confirms where you are. Name branches after the change (<code>docs/ci-lint-gate</code>), not the repo — a branch named like the repo is confusing in the PR list.</p>
     </div>
 
+    <div class="box note"><span class="lab">Pull requests · what they are &amp; what "green" means</span>
+      <p>A <strong>pull request (PR)</strong> proposes merging your branch's commits into <code>main</code>. The name is backwards — you're <em>offering</em> changes, not pulling them (GitLab's term, "merge request", is clearer). On GitHub it's a page showing the diff, a review area, and the status of any automated checks.</p>
+      <p>You need one because the ruleset blocks direct pushes to <code>main</code>: a PR is the only path in, and it's the one place the required <code>ansible-lint</code> check gets to run and gate the merge. Opening or pushing to a PR fires the workflow (it's wired <code>on: pull_request</code>), and the job reports a status back onto the PR — <strong>green&nbsp;✓</strong> = all 7 checks passed, <strong>red&nbsp;✗</strong> = something failed, a spinner = still running.</p>
+      <p>Because the check is <em>required</em>, the merge button stays disabled until it's green. So <em>"once it's green"</em> simply means the check finished and passed — at which point you merge it yourself (<code>gh pr merge --squash</code>; 0 approvals needed). Think of the PR as a holding area where your change is auto-vetted, and <code>main</code> only accepts it after the vetting comes back clean.</p>
+    </div>
+
     <h3>Rotate the vault password</h3>
     <p>Change it in <strong>both</strong> places or CI will fail to decrypt:</p>
 <pre><code><span class="cmt"># 1. on the mgmt node, update the file ansible.cfg points at</span>
