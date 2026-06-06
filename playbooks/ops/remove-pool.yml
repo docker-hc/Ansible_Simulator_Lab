@@ -1,0 +1,27 @@
+---
+# playbooks/ops/remove-pool.yml (DESTRUCTIVE) — delete a DDP pool by id (must be empty first)
+# Usage: ansible-playbook playbooks/ops/remove-pool.yml -e target_serial=810294 -e pool_id=0 -e confirm=true
+- name: Remove a DDP pool from an array
+  hosts: localhost
+  gather_facts: false
+  vars_files: [../../group_vars/vault.yml]
+  vars: { target_serial: "", pool_id: "", confirm: false }
+  tasks:
+    - name: Require target_serial, pool_id, and explicit confirm
+      ansible.builtin.assert:
+        that: ["target_serial | length > 0", "pool_id | string | length > 0", "confirm | bool"]
+        fail_msg: "Pass -e target_serial=<serial> -e pool_id=<id> -e confirm=true"
+    - name: "Resolve connection · {{ target_serial }}"
+      ansible.builtin.set_fact:
+        array_conn:
+          address: "{{ (vault_arrays | selectattr('serial', 'equalto', target_serial) | first).controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+    - name: "Delete DDP pool {{ pool_id ~ ' on ' ~ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_ddp_pool:
+        connection_info: "{{ array_conn }}"
+        state: absent
+        spec: { pool_id: "{{ pool_id | int }}" }
+      register: result
+    - name: "Show result · {{ target_serial }}"
+      ansible.builtin.debug: { var: result }

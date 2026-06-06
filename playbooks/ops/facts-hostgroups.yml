@@ -1,0 +1,35 @@
+---
+# playbooks/ops/facts-hostgroups.yml
+# List host groups on an array. Optionally restrict to specific ports.
+# Usage: ansible-playbook playbooks/ops/facts-hostgroups.yml -e target_serial=810294
+#        ansible-playbook playbooks/ops/facts-hostgroups.yml -e target_serial=810294 -e '{"ports":["CL1-A","CL2-A"]}'
+- name: Report host groups on an array
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/vault.yml
+  vars:
+    target_serial: ""
+    ports: []
+  tasks:
+    - name: Require target_serial
+      ansible.builtin.assert:
+        that: target_serial | length > 0
+        fail_msg: "Pass -e target_serial=<serial>"
+
+    - name: "Resolve connection · {{ target_serial }}"
+      ansible.builtin.set_fact:
+        array_conn:
+          address: "{{ (vault_arrays | selectattr('serial', 'equalto', target_serial) | first).controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+
+    - name: "Gather host group facts · {{ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_hg_facts:
+        connection_info: "{{ array_conn }}"
+        spec: "{{ {'ports': ports} if (ports | length > 0) else omit }}"
+      register: hgs
+
+    - name: "Show host groups · {{ target_serial }}"
+      ansible.builtin.debug:
+        var: hgs

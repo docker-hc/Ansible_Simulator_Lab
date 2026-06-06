@@ -1,0 +1,32 @@
+---
+# playbooks/ops/facts-drives.yml
+# List physical drives on an array (type codes, capacity, FREE vs in-use).
+# Usage: ansible-playbook playbooks/ops/facts-drives.yml -e target_serial=810294
+- name: Report drives on an array
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/vault.yml
+  vars:
+    target_serial: ""
+  tasks:
+    - name: Require target_serial
+      ansible.builtin.assert:
+        that: target_serial | length > 0
+        fail_msg: "Pass -e target_serial=<serial>"
+
+    - name: "Resolve connection · {{ target_serial }}"
+      ansible.builtin.set_fact:
+        array_conn:
+          address: "{{ (vault_arrays | selectattr('serial', 'equalto', target_serial) | first).controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+
+    - name: "Gather drive facts · {{ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_disk_drive_facts:
+        connection_info: "{{ array_conn }}"
+      register: drives
+
+    - name: "Show drives · {{ target_serial }}"
+      ansible.builtin.debug:
+        var: drives
