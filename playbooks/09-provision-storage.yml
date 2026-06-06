@@ -11,6 +11,7 @@
   vars_files:
     - ../group_vars/vault.yml
     - vars/provisioning.yml
+    - vars/os_profiles.yml
   vars:
     target_serials: []          # empty = every array in provisioning; set to limit
   tasks:

@@ -1,5 +1,5 @@
 ---
-# playbooks/vars/provisioning.yml — DDP pool -> LDEVs -> multipath presentation
+# playbooks/vars/provisioning.yml  (normalized)
 provisioning:
   - serial: "810294"
     pool:
@@ -12,36 +12,9 @@ provisioning:
     ldevs:
       - { ldev_id: 100, size: "10GB", name: "DPVOL-810294-100" }
       - { ldev_id: 101, size: "10GB", name: "DPVOL-810294-101" }
-    host_groups:
-      - name: "hg-node1-810294"
-        port_id: "CL1-A"
-        host_mode: "LINUX"
-        host_mode_options: [13, 68]
-        wwns:
-          - { wwn: "10000000C9DC0001", nickname: "rhel-dkc-node1-hba0" }
-        ldevs: [100]
-      - name: "hg-node1-810294"
-        port_id: "CL2-A"
-        host_mode: "LINUX"
-        host_mode_options: [13, 68]
-        wwns:
-          - { wwn: "10000000C9DC0011", nickname: "rhel-dkc-node1-hba1" }
-        ldevs: [100]
-      - name: "hg-node2-810294"
-        port_id: "CL1-A"
-        host_mode: "LINUX"
-        host_mode_options: [13, 68]
-        wwns:
-          - { wwn: "10000000C9DC0012", nickname: "rhel-dkc-node2-hba1" }
-        ldevs: [101]
-      - name: "hg-node2-810294"
-        port_id: "CL2-A"
-        host_mode: "LINUX"
-        host_mode_options: [13, 68]
-        wwns:
-          - { wwn: "10000000C9DC0002", nickname: "rhel-dkc-node2-hba0" }
-        ldevs: [101]
-
+    presentation:
+      - { host: "rhel-dkc-node1", ldevs: [100] }
+      - { host: "rhel-dkc-node2", ldevs: [101] }
   - serial: "840006"
     pool: { name: "Pool-0-840006", pool_id: 0, encryption: true }
     ldevs:
