@@ -1,0 +1,56 @@
+---
+# playbooks/ops/remove-hostgroup.yml  (DESTRUCTIVE; keeps the LDEVs)
+# Unpresent each group's LDEVs (required before delete), then delete the group.
+# Pass the groups with the LDEVs currently mapped to them.
+# Usage:
+#   ansible-playbook playbooks/ops/remove-hostgroup.yml -e target_serial=810294 -e confirm=true \
+#     -e '{"host_groups":[{"name":"hg-node1-810294","port_id":"CL1-A","ldevs":[100]}]}'
+- name: Remove host group(s) from an array
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/vault.yml
+  vars:
+    target_serial: ""
+    confirm: false
+    host_groups: []
+  tasks:
+    - name: Require target_serial, confirm, and a non-empty host_groups list
+      ansible.builtin.assert:
+        that:
+          - target_serial | length > 0
+          - confirm | bool
+          - host_groups | length > 0
+        fail_msg: "Pass -e target_serial=<serial> -e confirm=true -e '{\"host_groups\":[{name,port_id,ldevs}]}'"
+
+    - name: "Resolve connection · {{ target_serial }}"
+      ansible.builtin.set_fact:
+        array_conn:
+          address: "{{ (vault_arrays | selectattr('serial', 'equalto', target_serial) | first).controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+
+    - name: "Unpresent mapped LDEVs before delete · {{ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_hg:
+        connection_info: "{{ array_conn }}"
+        state: present
+        spec:
+          state: unpresent_ldev
+          name: "{{ item.name }}"
+          port_id: "{{ item.port_id }}"
+          ldevs: "{{ item.ldevs }}"
+      loop: "{{ host_groups }}"
+      when: item.ldevs | default([]) | length > 0
+      loop_control:
+        label: "{{ item.name }} on {{ item.port_id }}"
+
+    - name: "Delete host group · {{ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_hg:
+        connection_info: "{{ array_conn }}"
+        state: absent
+        spec:
+          name: "{{ item.name }}"
+          port_id: "{{ item.port_id }}"
+      loop: "{{ host_groups }}"
+      loop_control:
+        label: "{{ item.name }} on {{ item.port_id }}"
