@@ -1,0 +1,22 @@
+---
+- name: "Look up OS profile · {{ pres.host }}"
+  ansible.builtin.set_fact:
+    _host_profile: "{{ os_profiles[hostvars[pres.host].os_profile] }}"
+
+- name: "Create/assert multipath host group on each fabric port · {{ pres.host }}"
+  hitachivantara.vspone_block.vsp.hv_hg:
+    connection_info: "{{ array_conn }}"
+    state: present
+    spec:
+      name: "hg-{{ pres.host }}-{{ spec.serial }}"
+      port_id: "{{ path.key }}"
+      host_mode: "{{ _host_profile.host_mode }}"
+      host_mode_options: "{{ _host_profile.host_mode_options }}"
+      wwns:
+        - wwn: "{{ hostvars[pres.host]['wwn_' ~ path.value.hba] | replace(':', '') }}"
+          nickname: "{{ path.value.nickname }}"
+      ldevs: "{{ pres.ldevs }}"
+  loop: "{{ hostvars[pres.host].fabric_ports | dict2items }}"
+  loop_control:
+    loop_var: path
+    label: "hg-{{ pres.host }}-{{ spec.serial }} on {{ path.key }} (wwn_{{ path.value.hba }}) -> ldevs {{ pres.ldevs }}"

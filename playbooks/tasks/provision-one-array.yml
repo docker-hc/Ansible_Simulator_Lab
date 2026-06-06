@@ -1,7 +1,5 @@
 ---
 # playbooks/tasks/provision-one-array.yml — included per array (loop_var: spec)
-# Sequence: resolve connection -> DDP pool -> resolve pool id -> LDEVs -> host groups.
-# Module/param names verified against vsp_direct/ examples for collection 4.8.1.
 - name: "Resolve connection from vault_arrays · {{ spec.serial }}"
   ansible.builtin.set_fact:
     array_conn:
@@ -45,18 +43,9 @@
   loop_control:
     label: "{{ item.name }} (id {{ item.ldev_id }})"
 
-- name: "Create host groups (mode, HMOs, WWNs, LUN mapping) · {{ spec.serial }}"
-  hitachivantara.vspone_block.vsp.hv_hg:
-    connection_info: "{{ array_conn }}"
-    state: present
-    spec:
-      name: "{{ item.name }}"
-      port_id: "{{ item.port_id }}"
-      host_mode: "{{ item.host_mode }}"
-      host_mode_options: "{{ item.host_mode_options | default(omit) }}"
-      wwns: "{{ item.wwns | default(omit) }}"
-      ldevs: "{{ item.ldevs | default(omit) }}"
-      lun_paths: "{{ item.lun_paths | default(omit) }}"
-  loop: "{{ spec.host_groups | default([]) }}"
+- name: "Present LDEVs to hosts as multipath host groups · {{ spec.serial }}"
+  ansible.builtin.include_tasks: present-one-host.yml
+  loop: "{{ spec.presentation | default([]) }}"
   loop_control:
-    label: "{{ item.name }} on {{ item.port_id }}"
+    loop_var: pres
+    label: "{{ pres.host }} <- ldevs {{ pres.ldevs }}"

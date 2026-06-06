@@ -6,3 +6,9 @@ ansible_host: 192.168.56.22
 sam4h_host_name: rhel-dkc-node2
 wwn_a: "50:00:09:72:08:10:00:02"
 wwn_b: "50:00:09:72:08:11:00:02"
+
+# --- storage provisioning (added) ---
+os_profile: linux
+fabric_ports:
+  CL1-A: { hba: a, nickname: "rhel-dkc-node2-hba0" }
+  CL2-A: { hba: b, nickname: "rhel-dkc-node2-hba1" }
