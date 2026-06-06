@@ -1,0 +1,33 @@
+---
+# playbooks/util-remove-pool.yml — delete the manually-created DDP pool on 810294
+# so the provisioning chain can recreate it cleanly. Connection from the vault.
+#   cd /etc/ansible/Ansible_Simulator_Lab
+#   ansible-playbook playbooks/util-remove-pool.yml
+# The manual pool is id 0 (Pool-0-810294); change target_pool_id if it differs.
+- name: Remove the manual DDP pool
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../group_vars/vault.yml
+  vars:
+    target_serial: "810294"
+    target_pool_id: 0
+  tasks:
+    - name: "Resolve connection from vault_arrays"
+      ansible.builtin.set_fact:
+        array_conn:
+          address: "{{ (vault_arrays | selectattr('serial', 'equalto', target_serial) | first).controller_ip_0 }}"
+          username: "{{ vault_raidcom_user }}"
+          password: "{{ vault_raidcom_password }}"
+
+    - name: "Delete DDP pool on {{ target_serial }}"
+      hitachivantara.vspone_block.vsp.hv_ddp_pool:
+        connection_info: "{{ array_conn }}"
+        state: absent
+        spec:
+          pool_id: "{{ target_pool_id | int }}"
+      register: result
+
+    - name: "Show delete result"
+      ansible.builtin.debug:
+        var: result

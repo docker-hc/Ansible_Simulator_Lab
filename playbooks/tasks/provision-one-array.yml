@@ -1,0 +1,62 @@
+---
+# playbooks/tasks/provision-one-array.yml — included per array (loop_var: spec)
+# Sequence: resolve connection -> DDP pool -> resolve pool id -> LDEVs -> host groups.
+# Module/param names verified against vsp_direct/ examples for collection 4.8.1.
+- name: "Resolve connection from vault_arrays · {{ spec.serial }}"
+  ansible.builtin.set_fact:
+    array_conn:
+      address: "{{ (vault_arrays | selectattr('serial', 'equalto', spec.serial) | first).controller_ip_0 }}"
+      username: "{{ vault_raidcom_user }}"
+      password: "{{ vault_raidcom_password }}"
+
+- name: "Create DDP pool · {{ spec.serial }}"
+  hitachivantara.vspone_block.vsp.hv_ddp_pool:
+    connection_info: "{{ array_conn }}"
+    state: present
+    spec:
+      pool_name: "{{ spec.pool.name }}"
+      is_encryption_enabled: "{{ spec.pool.encryption | default(true) | bool }}"
+      threshold_warning: "{{ spec.pool.threshold_warning | default(70) | int }}"
+      threshold_depletion: "{{ spec.pool.threshold_depletion | default(80) | int }}"
+      raid_level: "{{ spec.pool.raid_level | default(omit) }}"
+      drives: "{{ spec.pool.drives | default(omit) }}"
+  register: pool
+
+- name: "Show pool result, verify assigned id · {{ spec.serial }}"
+  ansible.builtin.debug:
+    var: pool
+
+- name: "Set pool id for LDEVs · {{ spec.serial }}"
+  ansible.builtin.set_fact:
+    pool_id: "{{ spec.pool.pool_id | default(0) | int }}"
+
+- name: "Create LDEVs (DP-VOLs) with explicit ids · {{ spec.serial }}"
+  hitachivantara.vspone_block.vsp.hv_ldev:
+    connection_info: "{{ array_conn }}"
+    state: present
+    spec:
+      ldev_id: "{{ item.ldev_id }}"
+      pool_id: "{{ pool_id }}"
+      size: "{{ item.size }}"
+      name: "{{ item.name }}"
+      capacity_saving: "{{ item.capacity_saving | default('compression_deduplication') }}"
+      data_reduction_share: "{{ item.data_reduction_share | default(true) | bool }}"
+  loop: "{{ spec.ldevs | default([]) }}"
+  loop_control:
+    label: "{{ item.name }} (id {{ item.ldev_id }})"
+
+- name: "Create host groups (mode, HMOs, WWNs, LUN mapping) · {{ spec.serial }}"
+  hitachivantara.vspone_block.vsp.hv_hg:
+    connection_info: "{{ array_conn }}"
+    state: present
+    spec:
+      name: "{{ item.name }}"
+      port_id: "{{ item.port_id }}"
+      host_mode: "{{ item.host_mode }}"
+      host_mode_options: "{{ item.host_mode_options | default(omit) }}"
+      wwns: "{{ item.wwns | default(omit) }}"
+      ldevs: "{{ item.ldevs | default(omit) }}"
+      lun_paths: "{{ item.lun_paths | default(omit) }}"
+  loop: "{{ spec.host_groups | default([]) }}"
+  loop_control:
+    label: "{{ item.name }} on {{ item.port_id }}"

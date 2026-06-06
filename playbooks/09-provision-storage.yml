@@ -1,0 +1,23 @@
+---
+# playbooks/09-provision-storage.yml   (supersedes 09-provision-pool.yml)
+# Full per-array provisioning: DDP pool -> LDEVs -> host groups.
+# Driven by playbooks/vars/provisioning.yml; connection resolved from vault_arrays.
+#
+# Prove on one:  ansible-playbook playbooks/09-provision-storage.yml -e '{"target_serials":["810294"]}'
+# All listed:    ansible-playbook playbooks/09-provision-storage.yml
+- name: Provision storage (pool, LDEVs, host groups) per array spec
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../group_vars/vault.yml
+    - vars/provisioning.yml
+  vars:
+    target_serials: []          # empty = every array in provisioning; set to limit
+  tasks:
+    - name: Provision each listed array per its spec
+      ansible.builtin.include_tasks: tasks/provision-one-array.yml
+      loop: "{{ provisioning }}"
+      loop_control:
+        loop_var: spec
+        label: "{{ spec.serial }}"
+      when: not target_serials or spec.serial in target_serials
